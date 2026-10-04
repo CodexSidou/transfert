@@ -5,37 +5,57 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SendCode — Transfert par code</title>
 <style>
-  * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+  * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; transition: background .3s, color .3s; }
   body { margin:0; min-height:100vh; background: radial-gradient(circle at 20% 0%, #1b3a4b, #0b1220 60%); color:#e8f2ff; padding:40px 16px; display:flex; flex-direction:column; align-items:center; }
+  body.light { background: linear-gradient(180deg,#e0f2fe,#f8fafc); color:#0f172a; }
   h1 { font-size:34px; margin:0 0 4px; }
   h1 span { color:#38bdf8; }
   .sub { color:#94a3b8; margin:0 0 30px; }
+  body.light .sub { color:#475569; }
   .card { background:rgba(15,30,48,.75); border:1px solid #1e3a5f; border-radius:16px; padding:24px; width:100%; max-width:620px; margin-bottom:20px; box-shadow:0 10px 30px rgba(0,0,0,.35); }
+  body.light .card { background:#ffffff; border-color:#cbd5e1; box-shadow:0 6px 20px rgba(0,0,0,.08); }
   .card h2 { margin-top:0; color:#38bdf8; font-size:18px; }
-  button { background:linear-gradient(135deg,#38bdf8,#0ea5e9); color:#04263b; font-weight:700; border:0; padding:11px 22px; border-radius:10px; font-size:15px; cursor:pointer; transition:.2s; }
+  button { background:linear-gradient(135deg,#38bdf8,#0ea5e9); color:#04263b; font-weight:700; border:0; padding:11px 22px; border-radius:10px; font-size:15px; cursor:pointer; }
   button:hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(56,189,248,.4); }
-  input[type=text] { padding:11px 14px; font-size:16px; border-radius:10px; border:1px solid #2b4a6b; background:#0b1a2c; color:#e8f2ff; width:170px; }
-  input[type=file] { color:#94a3b8; margin-top:12px; }
-  #code { font-size:32px; letter-spacing:6px; font-family:Consolas,monospace; color:#38bdf8; background:#0b1a2c; border:1px dashed #38bdf8; padding:12px 22px; border-radius:12px; display:inline-block; margin:12px 0; }
+  button.small { padding:6px 12px; font-size:13px; margin-left:8px; }
+  input[type=text] { padding:11px 14px; font-size:16px; border-radius:10px; border:1px solid #2b4a6b; background:#0b1a2c; color:#e8f2ff; width:150px; }
+  body.light input[type=text] { background:#f1f5f9; color:#0f172a; }
+  input[type=file] { color:#94a3b8; margin-top:10px; display:block; }
+  #code { font-size:32px; letter-spacing:8px; font-family:Consolas,monospace; color:#38bdf8; background:#0b1a2c; border:1px dashed #38bdf8; padding:12px 22px; border-radius:12px; display:inline-block; margin:12px 0; }
+  body.light #code { background:#f1f5f9; }
   #log { background:#0b1a2c; border-radius:10px; padding:14px; min-height:70px; white-space:pre-wrap; font-size:13px; color:#a5d8ff; margin-top:22px; max-width:620px; width:100%; }
-  progress { width:100%; height:14px; border-radius:8px; }
-  #files a { display:block; color:#7dd3fc; text-decoration:none; padding:8px 10px; background:#0b1a2c; border-radius:8px; margin-top:6px; }
-  #files a:hover { background:#12263d; }
+  body.light #log { background:#f1f5f9; color:#334155; }
+  progress { width:100%; height:14px; border-radius:8px; margin-top:10px; }
+  #files a, .history-item { display:block; color:#7dd3fc; text-decoration:none; padding:8px 10px; background:#0b1a2c; border-radius:8px; margin-top:6px; }
+  body.light #files a, body.light .history-item { background:#f1f5f9; color:#0369a1; }
   .hidden { display:none; }
+  #qrcode { margin:10px 0; background:#fff; padding:8px; display:inline-block; border-radius:8px; }
+  #themeBtn { position:fixed; top:16px; right:16px; }
+  .speed { color:#7dd3fc; font-family:Consolas,monospace; margin-top:6px; font-size:14px; }
 </style>
 </head>
 <body>
+<button id="themeBtn" class="small">☀️ / 🌙</button>
 <h1>Send<span>Code</span></h1>
-<p class="sub">Transfère un dossier de PC à PC, par simple code — P2P, sans serveur.</p>
+<p class="sub">Transfère dossiers, images, zip, rar… de PC à PC, par simple code — P2P, sans serveur.</p>
 
 <div class="card">
   <h2>📤 Envoyer</h2>
   <button id="btnSender">Créer un code</button>
   <div id="senderArea" class="hidden">
     <div id="code"></div>
+    <button id="btnCopy" class="small">📋 Copier le code</button>
+    <button id="btnLink" class="small">🔗 Lien direct</button>
+    <div id="linkBox" class="hidden speed"></div>
+    <div id="qrcode"></div>
     <br>
-    <input type="file" id="folder" webkitdirectory directory multiple>
+    <div id="inputs">
+      <input type="file" class="picker" webkitdirectory directory multiple>
+      <input type="file" class="picker" multiple>
+    </div>
+    <button id="btnAdd" class="small">➕ Ajouter d'autres fichiers</button>
     <progress id="progSend" value="0" max="100" class="hidden"></progress>
+    <div id="speedSend" class="speed hidden"></div>
   </div>
 </div>
 
@@ -43,34 +63,78 @@
   <h2>📥 Recevoir</h2>
   <input type="text" id="codeInput" placeholder="code reçu">
   <button id="btnReceiver">Se connecter</button>
+  <button id="btnAuto" class="small hidden">🚀 Connexion auto</button>
   <div id="files"></div>
+  <div id="recvSpeed" class="speed hidden"></div>
+  <div id="ackBox" class="hidden">
+    <input type="text" id="ackInput" placeholder="message pour l'envoyeur">
+    <button id="btnAck" class="small">Envoyer</button>
+  </div>
+</div>
+
+<div class="card">
+  <h2>🕓 Historique</h2>
+  <div id="history"></div>
 </div>
 
 <div id="log"></div>
 
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 const log = m => document.getElementById('log').textContent += m + "\n";
 const rand = () => String(Math.floor(10000 + Math.random() * 90000));
+let sendConn = null;
 
+// Thème clair/sombre
+document.getElementById('themeBtn').onclick = () => document.body.classList.toggle('light');
+
+// Historique
+const hist = JSON.parse(localStorage.getItem('sc_history') || '[]');
+const renderHist = () => document.getElementById('history').innerHTML =
+  hist.map(h => `<div class="history-item">📄 ${h.name} — ${h.date}</div>`).join('') || '<i>vide</i>';
+renderHist();
+const addHist = n => { hist.unshift({ name: n, date: new Date().toLocaleString() }); localStorage.setItem('sc_history', JSON.stringify(hist.slice(0, 20))); renderHist(); };
+
+// Auto-connexion si ?code= dans l'URL
+const urlCode = new URLSearchParams(location.search).get('code');
+if (urlCode) { document.getElementById('codeInput').value = urlCode; document.getElementById('btnAuto').classList.remove('hidden'); }
+
+document.getElementById('btnCopy').onclick = () => { navigator.clipboard.writeText(document.getElementById('code').textContent); log('📋 Code copié'); };
+document.getElementById('btnAdd').onclick = () => {
+  const i = document.createElement('input'); i.type = 'file'; i.multiple = true; i.className = 'picker';
+  document.getElementById('inputs').appendChild(i);
+};
+
+// ---------- EXPEDITEUR ----------
 document.getElementById('btnSender').onclick = () => {
   const code = rand();
   const peer = new Peer(code);
+  document.getElementById('btnLink').onclick = () => {
+    const link = location.origin + location.pathname + '?code=' + code;
+    document.getElementById('linkBox').innerHTML = '🔗 <a href="' + link + '">' + link + '</a>';
+    document.getElementById('linkBox').classList.remove('hidden');
+    new QRCode(document.getElementById('qrcode'), link);
+  };
   peer.on('open', () => {
     document.getElementById('senderArea').classList.remove('hidden');
     document.getElementById('code').textContent = code;
     log('🔑 Code prêt : ' + code);
+    new QRCode(document.getElementById('qrcode'), code);
   });
   peer.on('connection', conn => {
+    sendConn = conn;
     conn.on('open', () => log('✅ Receveur connecté !'));
+    conn.on('data', msg => { if (msg.type === 'ack') log('💬 Message du receveur : ' + msg.text); });
     conn.on('data', async msg => {
       if (msg.type === 'ready') {
-        const files = [...document.getElementById('folder').files];
-        if (!files.length) { log('⚠️ Choisis d\'abord un dossier'); return; }
+        const files = [...document.querySelectorAll('input.picker')].flatMap(i => [...i.files]);
+        if (!files.length) { log('⚠️ Ajoute d\'abord des fichiers/dossiers'); return; }
         document.getElementById('progSend').classList.remove('hidden');
+        document.getElementById('speedSend').classList.remove('hidden');
         const CHUNK = 16 * 1024;
         const total = files.reduce((s, f) => s + f.size, 0) || 1;
-        let sent = 0, done = 0;
+        let sent = 0, done = 0, t0 = Date.now(), last = 0, lastT = t0;
         for (const f of files) {
           conn.send({ type: 'meta', name: f.webkitRelativePath || f.name, size: f.size });
           for (let off = 0; off < f.size; off += CHUNK) {
@@ -78,49 +142,59 @@ document.getElementById('btnSender').onclick = () => {
             conn.send({ type: 'chunk', data: buf });
             sent += buf.byteLength;
             document.getElementById('progSend').value = sent / total * 100;
-            while (conn.dataChannel && conn.dataChannel.bufferedAmount > 4 * 1024 * 1024) {
-              await new Promise(r => setTimeout(r, 100));
-            }
+            const now = Date.now();
+            if (now - lastT > 500) { const v = (sent - last) / ((now - lastT) / 1000); document.getElementById('speedSend').textContent = '⚡ ' + (v / 1048576).toFixed(2) + ' Mo/s'; last = sent; lastT = now; }
+            while (conn.dataChannel && conn.dataChannel.bufferedAmount > 8 * 1024 * 1024) await new Promise(r => setTimeout(r, 100));
             await new Promise(r => setTimeout(r, 0));
           }
           conn.send({ type: 'fileend' });
+          addHist(f.name);
           log('📄 Envoyé : ' + f.name + ' (' + (++done) + '/' + files.length + ')');
         }
         conn.send({ type: 'done' });
-        log('🎉 Transfert terminé !');
+        log('🎉 Transfert terminé en ' + ((Date.now() - t0) / 1000).toFixed(1) + 's !');
       }
     });
   });
   peer.on('error', e => log('❌ Erreur : ' + e.type));
 };
 
-document.getElementById('btnReceiver').onclick = () => {
-  const code = document.getElementById('codeInput').value.trim();
-  if (!code) { log('⚠️ Entre le code'); return; }
+// ---------- RECEVEUR ----------
+const connectRecv = code => {
   const peer = new Peer();
-  let cur = null;
+  let cur = null, recv = 0, t0 = Date.now(), last = 0, lastT = t0;
+  document.getElementById('recvSpeed').classList.remove('hidden');
   peer.on('open', () => {
     const conn = peer.connect(code, { serialization: 'binary' });
-    conn.on('open', () => { log('🔗 Connecté à ' + code); conn.send({ type: 'ready' }); });
+    window._conn = conn;
+    conn.on('open', () => { log('🔗 Connecté à ' + code); conn.send({ type: 'ready' }); t0 = Date.now(); lastT = t0; });
     conn.on('data', msg => {
-      if (msg.type === 'meta') { cur = { name: msg.name, parts: [] }; log('📥 Réception : ' + msg.name); }
-      else if (msg.type === 'chunk' && cur) cur.parts.push(msg.data);
+      if (msg.type === 'meta') { cur = { name: msg.name, parts: [] }; log('📥 Réception : ' + msg.name); recv = 0; }
+      else if (msg.type === 'chunk' && cur) {
+        cur.parts.push(msg.data); recv += msg.data.byteLength;
+        const now = Date.now();
+        if (now - lastT > 500) { const v = (recv - last) / ((now - lastT) / 1000); document.getElementById('recvSpeed').textContent = '⚡ ' + (v / 1048576).toFixed(2) + ' Mo/s'; last = recv; lastT = now; }
+      }
       else if (msg.type === 'fileend' && cur) {
         const blob = new Blob(cur.parts);
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = cur.name.split('/').pop();
-        a.textContent = '⬇ ' + cur.name + ' — ' + (blob.size / 1024).toFixed(0) + ' Ko';
+        a.textContent = '⬇ ' + cur.name + ' — ' + (blob.size / 1048576).toFixed(2) + ' Mo';
         document.getElementById('files').appendChild(a);
+        addHist(cur.name + ' (reçu)');
         log('✅ Reçu : ' + cur.name);
         cur = null;
       }
-      else if (msg.type === 'done') log('🎉 Tous les fichiers reçus !');
+      else if (msg.type === 'done') { log('🎉 Tous les fichiers reçus !'); document.getElementById('ackBox').classList.remove('hidden'); }
     });
     conn.on('error', e => log('❌ ' + e));
   });
   peer.on('error', e => log('❌ ' + e.type + ' (code inconnu ?)'));
 };
+document.getElementById('btnReceiver').onclick = () => { const c = document.getElementById('codeInput').value.trim(); if (!c) { log('⚠️ Entre le code'); return; } connectRecv(c); };
+document.getElementById('btnAuto').onclick = () => connectRecv(urlCode);
+document.getElementById('btnAck').onclick = () => { const t = document.getElementById('ackInput').value.trim(); if (t && window._conn) window._conn.send({ type: 'ack', text: t }); log('💬 Message envoyé'); };
 </script>
 </body>
 </html>
