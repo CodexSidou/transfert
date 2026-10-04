@@ -130,12 +130,12 @@ document.getElementById('themeBtn').onclick = () => document.body.classList.togg
 
 const hist = JSON.parse(localStorage.getItem('sc_history') || '[]');
 const renderHist = () => document.getElementById('history').innerHTML =
-  hist.map((h, i) => `<div class="history-item">📄 ${h.name} — ${h.date} <button class="ghost" onclick="delHist(${i})" style="padding:2px 8px;font-size:12px">🗑️</button></div>`).join('') || '<i>vide</i>';
+  hist.map((h, i) => `<div class="history-item">📄 ${h.name} — ${h.date} ${h.url ? `<a href="${h.url}" download style="color:#7dd3fc;text-decoration:none">⬇</a>` : ''} <button class="ghost" onclick="delHist(${i})" style="padding:2px 8px;font-size:12px">🗑️</button></div>`).join('') || '<i>vide</i>';
 renderHist();
-const saveHist = () => localStorage.setItem('sc_history', JSON.stringify(hist.slice(0, 20)));
+const saveHist = () => localStorage.setItem('sc_history', JSON.stringify(hist.slice(0, 20).map(({ url, ...r }) => r)));
 window.delHist = i => { hist.splice(i, 1); saveHist(); renderHist(); };
 document.getElementById('btnClearHist').onclick = () => { hist.length = 0; saveHist(); renderHist(); };
-const addHist = n => { hist.unshift({ name: n, date: new Date().toLocaleString() }); localStorage.setItem('sc_history', JSON.stringify(hist.slice(0, 20))); renderHist(); };
+const addHist = (n, url) => { hist.unshift({ name: n, date: new Date().toLocaleString(), url }); saveHist(); renderHist(); };
 
 const urlCode = new URLSearchParams(location.search).get('code');
 if (urlCode) {
@@ -231,7 +231,7 @@ function setupPeer(peer, code) {
         await new Promise(r => setTimeout(r, 0));
       }
       conn.send({ type: 'fileend' });
-      addHist(f.name);
+      addHist(f.name, URL.createObjectURL(f));
       log('📄 Envoyé : ' + f.name + ' (' + (++done) + '/' + files.length + ')');
     }
     conn.send({ type: 'done' });
@@ -281,7 +281,7 @@ function connectRecv(code) {
         a.download = cur.name.split('/').pop();
         a.textContent = '⬇ ' + cur.name + ' — ' + (blob.size / 1048576).toFixed(2) + ' Mo';
         document.getElementById('files').appendChild(a);
-        addHist(cur.name + ' (reçu)');
+        addHist(cur.name + ' (reçu)', a.href);
         log('✅ Reçu : ' + cur.name);
         cur = null;
       }
