@@ -66,6 +66,7 @@
       <input type="file" class="picker" webkitdirectory directory multiple>
       <input type="file" class="picker" multiple>
     </div>
+    <div id="pickedList"></div>
     <button id="btnSendFiles" disabled>📤 Envoyer les fichiers</button>
     <progress id="progSend" class="hidden" value="0" max="100"></progress>
     <div id="speedSend" class="speed hidden"></div>
@@ -144,6 +145,19 @@ if (urlCode) {
 }
 
 document.getElementById('btnCopy').onclick = () => { navigator.clipboard.writeText(document.getElementById('code').textContent); log('📋 Code copié'); };
+const picked = [];
+function renderPicked() {
+  document.getElementById('pickedList').innerHTML = picked.map((f, i) =>
+    `<div class="history-item">📄 ${f.webkitRelativePath || f.name} — ${(f.size/1048576).toFixed(2)} Mo <button class="ghost" onclick="delPicked(${i})" style="padding:2px 8px;font-size:12px">🗑️</button></div>`).join('');
+}
+window.delPicked = i => { picked.splice(i, 1); renderPicked(); };
+document.getElementById('inputs').addEventListener('change', e => {
+  if (!e.target.matches('input.picker')) return;
+  for (const f of e.target.files) {
+    if (!picked.some(p => p.name === f.name && p.size === f.size && p.lastModified === f.lastModified)) picked.push(f);
+  }
+  renderPicked();
+});
 document.getElementById('btnAdd').onclick = () => {
   const i = document.createElement('input'); i.type = 'file'; i.multiple = true; i.className = 'picker';
   document.getElementById('inputs').appendChild(i);
@@ -157,6 +171,7 @@ document.getElementById('btnSender').onclick = () => {
   document.getElementById('linkBox').classList.add('hidden');
   document.getElementById('linkBox').innerHTML = '';
   document.getElementById('inputs').innerHTML = '<input type="file" class="picker" webkitdirectory directory multiple><input type="file" class="picker" multiple>';
+  picked.length = 0; renderPicked();
   sendConn = null;
   const btn = document.getElementById('btnSendFiles'); btn.disabled = true; btn.classList.add('hidden');
   // masquer la section et recréer
@@ -194,7 +209,7 @@ function setupPeer(peer, code) {
   });
   document.getElementById('btnSendFiles').onclick = async () => {
     if (!sendConn) { log('⚠️ Pas de receveur connecté'); return; }
-    const files = [...document.querySelectorAll('input.picker')].flatMap(i => [...i.files]);
+    const files = picked.length ? picked : [...document.querySelectorAll('input.picker')].flatMap(i => [...i.files]);
     if (!files.length) { log('⚠️ Ajoute d\'abord des fichiers'); return; }
     const btn = document.getElementById('btnSendFiles'); btn.disabled = true;
     document.getElementById('progSend').classList.remove('hidden');
