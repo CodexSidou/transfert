@@ -91,6 +91,7 @@
 
 <div class="card">
   <h2>🕓 Historique</h2>
+  <button id="btnClearHist" class="ghost">🗑️ Vider l'historique</button>
   <div id="history"></div>
 </div>
 
@@ -115,8 +116,11 @@ document.getElementById('themeBtn').onclick = () => document.body.classList.togg
 
 const hist = JSON.parse(localStorage.getItem('sc_history') || '[]');
 const renderHist = () => document.getElementById('history').innerHTML =
-  hist.map(h => `<div class="history-item">📄 ${h.name} — ${h.date}</div>`).join('') || '<i>vide</i>';
+  hist.map((h, i) => `<div class="history-item">📄 ${h.name} — ${h.date} <button class="ghost" onclick="delHist(${i})" style="padding:2px 8px;font-size:12px">🗑️</button></div>`).join('') || '<i>vide</i>';
 renderHist();
+const saveHist = () => localStorage.setItem('sc_history', JSON.stringify(hist.slice(0, 20)));
+window.delHist = i => { hist.splice(i, 1); saveHist(); renderHist(); };
+document.getElementById('btnClearHist').onclick = () => { hist.length = 0; saveHist(); renderHist(); };
 const addHist = n => { hist.unshift({ name: n, date: new Date().toLocaleString() }); localStorage.setItem('sc_history', JSON.stringify(hist.slice(0, 20))); renderHist(); };
 
 const urlCode = new URLSearchParams(location.search).get('code');
