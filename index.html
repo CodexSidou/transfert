@@ -75,13 +75,17 @@
     <div id="linkBox" class="hidden"></div>
     <div id="qrcode"></div>
     <label data-ar="الملفات (أول محدد = مجلد · الثاني = ملفات · على الهاتف يمكن اختيار الصور أيضًا) :" data-fr="Fichiers (1er = dossier · 2e = fichiers · sur téléphone vous pouvez aussi choisir Photos) :">الملفات (أول محدد = مجلد · الثاني = ملفات · على الهاتف يمكن اختيار الصور أيضًا) :</label>
-    <div id="inputs">
+    <div id="dropzone" data-ar="📂 اضغط أو اسحب الملفات هنا" data-fr="📂 Clique ou glisse des fichiers ici" style="border:2px dashed #818cf8;border-radius:16px;padding:32px;text-align:center;cursor:pointer;margin-top:12px;color:#a5b4fc">📂 اضغط أو اسحب الملفات هنا</div>
+    <div id="inputs" style="display:none">
       <input type="file" class="picker" webkitdirectory directory multiple>
-      <input type="file" class="picker" multiple>
+      <input type="file" id="pickFiles" class="picker" multiple>
       <input type="file" id="photos" accept="image/*" multiple class="picker hidden">
     </div>
     <div id="pickedList"></div>
-    <button id="btnPhotos" class="ghost" data-ar="📷 إرسال الصور" data-fr="📷 Envoyer des photos">📷 إرسال الصور</button>
+    <div class="row" style="justify-content:center">
+      <button id="btnAdd" class="ghost" data-ar="📁 مجلد" data-fr="📁 Dossier">📁 مجلد</button>
+      <button id="btnPhotos" class="ghost" data-ar="📷 صور" data-fr="📷 Photos">📷 صور</button>
+    </div>
     <button id="btnSendFiles" disabled data-ar="📤 إرسال الملفات" data-fr="📤 Envoyer les fichiers">📤 إرسال الملفات</button>
     <progress id="progSend" class="hidden" value="0" max="100"></progress>
     <div id="speedSend" class="speed hidden"></div>
@@ -193,9 +197,16 @@ document.getElementById('inputs').addEventListener('change', e => {
   }
   renderPicked();
 });
-document.getElementById('btnAdd').onclick = () => {
-  const i = document.createElement('input'); i.type = 'file'; i.multiple = true; i.className = 'picker';
-  document.getElementById('inputs').appendChild(i);
+document.getElementById('btnAdd').onclick = () => { document.querySelector('#inputs input[webkitdirectory]').click(); };
+document.getElementById('dropzone').onclick = () => document.getElementById('pickFiles').click();
+document.getElementById('dropzone').ondragover = e => { e.preventDefault(); e.target.style.background = 'rgba(129,140,248,.15)'; };
+document.getElementById('dropzone').ondragleave = e => { e.target.style.background = ''; };
+document.getElementById('dropzone').ondrop = e => {
+  e.preventDefault(); e.target.style.background = '';
+  for (const f of e.dataTransfer.files) {
+    if (!picked.some(p => p.name === f.name && p.size === f.size && p.lastModified === f.lastModified)) picked.push(f);
+  }
+  renderPicked();
 };
 
 document.getElementById('btnPhotos').onclick = () => document.getElementById('photos').click();
@@ -205,7 +216,7 @@ document.getElementById('btnSender').onclick = () => {
   document.getElementById('qrcode').innerHTML = '';
   document.getElementById('linkBox').classList.add('hidden');
   document.getElementById('linkBox').innerHTML = '';
-  document.getElementById('inputs').innerHTML = '<input type="file" class="picker" webkitdirectory directory multiple><input type="file" class="picker" multiple><input type="file" id="photos" accept="image/*" multiple class="picker hidden">';
+  document.getElementById('inputs').innerHTML = '<input type="file" class="picker" webkitdirectory directory multiple><input type="file" id="pickFiles" class="picker" multiple><input type="file" id="photos" accept="image/*" multiple class="picker hidden">';
   picked.length = 0; renderPicked();
   sendConn = null;
   const btn = document.getElementById('btnSendFiles'); btn.disabled = true; btn.classList.add('hidden');
