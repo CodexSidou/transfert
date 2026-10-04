@@ -219,7 +219,7 @@ function setupPeer(peer, code) {
     const total = files.reduce((s, f) => s + f.size, 0) || 1;
     let sent = 0, done = 0, t0 = Date.now(), last = 0, lastT = t0;
     for (const f of files) {
-      conn.send({ type: 'meta', name: f.webkitRelativePath || f.name, size: f.size });
+      conn.send({ type: 'meta', name: f.webkitRelativePath || f.name, size: f.size, mime: f.type });
       for (let off = 0; off < f.size; off += CHUNK) {
         const buf = await f.slice(off, off + CHUNK).arrayBuffer();
         conn.send({ type: 'chunk', data: buf });
@@ -267,7 +267,7 @@ function connectRecv(code) {
       window._stopReady = () => { gotFirst = true; clearInterval(iv); };
     });
     conn.on('data', async msg => {
-      if (msg.type === 'meta') { cur = { name: msg.name, parts: [] }; log('📥 ' + msg.name); last = 0; if (window._stopReady) window._stopReady(); }
+      if (msg.type === 'meta') { cur = { name: msg.name, parts: [], mime: msg.mime || '' }; log('📥 ' + msg.name); last = 0; if (window._stopReady) window._stopReady(); }
       else if (msg.type === 'chunk' && cur) {
         cur.parts.push(msg.data);
         const now = Date.now();
@@ -275,13 +275,15 @@ function connectRecv(code) {
         if (now - lastT > 500) { const v = (got - last) / ((now - lastT) / 1000); document.getElementById('recvSpeed').textContent = '⚡ ' + (v / 1048576).toFixed(2) + ' Mo/s'; last = got; lastT = now; }
       }
       else if (msg.type === 'fileend' && cur) {
-        const blob = new Blob(cur.parts);
+        const blob = new Blob(cur.parts, { type: cur.mime });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = cur.name.split('/').pop();
         a.textContent = '⬇ ' + cur.name + ' — ' + (blob.size / 1048576).toFixed(2) + ' Mo';
+        if (blob.type.startsWith('image/')) { a.target = '_blank'; a.textContent = '🖼️ ' + cur.name + ' — ' + (blob.size / 1048576).toFixed(2) + ' Mo (ouvrir)'; }
         document.getElementById('files').appendChild(a);
         addHist(cur.name + ' (reçu)', a.href);
+        setTimeout(() => a.click(), 600); // téléchargement auto
         log('✅ Reçu : ' + cur.name);
         cur = null;
       }
