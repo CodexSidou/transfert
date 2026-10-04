@@ -5,62 +5,60 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SendCode — Transfert par code</title>
 <style>
-  * { box-sizing: border-box; margin:0; padding:0; font-family: 'Segoe UI', system-ui, sans-serif; }
-  body { min-height:100vh; background: linear-gradient(160deg, #0f2027, #203a43, #2c5364); color:#eef7ff; padding:32px 16px 60px; display:flex; flex-direction:column; align-items:center; }
-  body.light { background: linear-gradient(160deg,#e0f2fe,#f0f9ff); color:#0f172a; }
+  * { box-sizing: border-box; margin:0; padding:0; font-family: 'Segoe UI', system-ui, sans-serif; transition: box-shadow .2s; }
+  body { min-height:100vh; background: radial-gradient(1200px 600px at 80% -10%, #312e81 0%, #0f172a 45%, #020617 100%); color:#e2e8f0; padding:32px 16px 60px; display:flex; flex-direction:column; align-items:center; }
+  body.light { background: radial-gradient(1200px 600px at 80% -10%, #c7d2fe 0%, #eef2ff 50%, #ffffff 100%); color:#1e293b; }
   header { text-align:center; margin-bottom:28px; }
-  header h1 { font-size:38px; letter-spacing:1px; }
-  header h1 b { color:#38bdf8; }
-  header p { color:#b8d4e8; margin-top:6px; font-size:15px; }
+  header h1 { font-size:40px; font-weight:800; letter-spacing:1px; }
+  header h1 b { color:#a5b4fc; }
+  header p { color:#94a3b8; margin-top:8px; }
   body.light header p { color:#475569; }
-  .card { background:rgba(255,255,255,.07); backdrop-filter: blur(8px); border:1px solid rgba(255,255,255,.15); border-radius:18px; padding:26px; width:100%; max-width:640px; margin-bottom:18px; }
-  body.light .card { background:#fff; border-color:#e2e8f0; }
-  .card h2 { color:#38bdf8; font-size:17px; margin-bottom:14px; text-transform:uppercase; letter-spacing:2px; }
-  label { display:block; font-size:13px; color:#9fc3dd; margin:12px 0 4px; }
-  body.light label { color:#64748b; }
-  button { background:#38bdf8; color:#06283b; font-weight:700; border:none; padding:11px 20px; border-radius:10px; cursor:pointer; font-size:14px; margin:4px 2px; }
-  button:hover { background:#7dd3fc; transform:translateY(-1px); }
-  button.ghost { background:transparent; color:#38bdf8; border:1px solid #38bdf8; }
-  input[type=text] { padding:11px 14px; border-radius:10px; border:1px solid rgba(56,189,248,.4); background:rgba(0,0,0,.25); color:#fff; width:100%; max-width:240px; font-size:16px; }
-  body.light input[type=text] { background:#f8fafc; color:#0f172a; border-color:#cbd5e1; }
-  input[type=file] { margin:6px 0; color:#b8d4e8; font-size:13px; }
-  .code-box { font-size:42px; letter-spacing:12px; font-family:Consolas,monospace; color:#38bdf8; background:rgba(0,0,0,.3); border:2px dashed #38bdf8; border-radius:14px; padding:14px 26px; display:inline-block; margin:16px 0 8px; }
-  body.light .code-box { background:#f8fafc; }
-  progress { width:100%; height:12px; border-radius:6px; margin-top:12px; }
-  .speed { font-family:Consolas,monospace; color:#7dd3fc; margin-top:8px; font-size:14px; }
-  .box { background:rgba(0,0,0,.25); border-radius:12px; padding:12px 14px; min-height:56px; max-height:170px; overflow-y:auto; font-size:13px; white-space:pre-wrap; margin:10px 0; color:#a5d8ff; }
+  .card { background: rgba(30,41,59,.6); backdrop-filter: blur(10px); border:1px solid rgba(148,163,184,.2); border-radius:20px; padding:26px; width:100%; max-width:640px; margin-bottom:18px; box-shadow:0 12px 34px rgba(0,0,0,.35); }
+  body.light .card { background:#ffffff; border-color:#e2e8f0; box-shadow:0 8px 24px rgba(0,0,0,.08); }
+  .card h2 { color:#c4b5fd; font-size:16px; margin-bottom:14px; text-transform:uppercase; letter-spacing:3px; }
+  label { display:block; font-size:13px; color:#94a3b8; margin:14px 0 4px; }
+  button { background: linear-gradient(135deg,#818cf8,#a78bfa); color:#0f172a; font-weight:800; border:none; padding:11px 20px; border-radius:11px; cursor:pointer; font-size:14px; margin:4px 2px; }
+  button:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 8px 20px rgba(129,140,248,.45); }
+  button:disabled { opacity:.45; cursor:not-allowed; }
+  button.ghost { background:transparent; color:#a5b4fc; border:1px solid #6366f1; }
+  input[type=text] { padding:11px 14px; border-radius:11px; border:1px solid #4f46e5; background:rgba(0,0,0,.3); color:#fff; width:100%; max-width:240px; font-size:16px; }
+  body.light input[type=text] { background:#f8fafc; color:#0f172a; border-color:#c7d2fe; }
+  input[type=file] { margin:6px 0; color:#94a3b8; font-size:13px; }
+  .code-box { font-size:44px; letter-spacing:12px; font-family:Consolas,monospace; color:#a5b4fc; background:rgba(0,0,0,.35); border:2px dashed #818cf8; border-radius:16px; padding:14px 26px; display:inline-block; margin:16px 0 10px; }
+  body.light .code-box { background:#f8fafc; color:#6366f1; }
+  progress { width:100%; height:12px; border-radius:6px; margin-top:12px; accent-color:#8b5cf6; }
+  .speed { font-family:Consolas,monospace; color:#c4b5fd; margin-top:8px; font-size:14px; }
+  .box { background:rgba(0,0,0,.3); border-radius:12px; padding:12px 14px; min-height:56px; max-height:170px; overflow-y:auto; font-size:13px; white-space:pre-wrap; margin:10px 0; color:#c7d2fe; }
   body.light .box { background:#f1f5f9; color:#334155; }
-  #files a, .history-item { display:block; color:#7dd3fc; background:rgba(0,0,0,.25); padding:9px 12px; border-radius:9px; margin-top:6px; text-decoration:none; }
-  body.light #files a, body.light .history-item { background:#f1f5f9; color:#0369a1; }
+  #files a, .history-item { display:block; color:#c4b5fd; background:rgba(0,0,0,.3); padding:9px 12px; border-radius:9px; margin-top:6px; text-decoration:none; }
+  body.light #files a, body.light .history-item { background:#f1f5f9; color:#6d28d9; }
   .row { display:flex; gap:8px; align-items:center; margin-top:8px; flex-wrap:wrap; }
   .hidden { display:none; }
   #themeBtn { position:fixed; top:18px; right:18px; border-radius:50%; width:42px; height:42px; padding:0; font-size:18px; }
-  #qrcode { background:#fff; padding:8px; border-radius:10px; display:inline-block; margin-top:10px; }
-  .steps { display:flex; gap:6px; margin-bottom:14px; font-size:12px; color:#9fc3dd; }
-  .steps b { color:#38bdf8; }
+  #qrcode { background:#fff; padding:10px; border-radius:12px; display:inline-block; margin-top:12px; }
+  .note { font-size:12px; color:#94a3b8; margin-top:10px; }
 </style>
 </head>
 <body>
-<button id="themeBtn" class="ghost">☀️</button>
+<button id="themeBtn" class="ghost">🌓</button>
 <header>
   <h1>Send<b>Code</b></h1>
-  <p>Dossiers, images, ZIP, RAR… transférés directement entre 2 PC, sans serveur.</p>
+  <p>Dossiers, images, ZIP, RAR… entre 2 PC directement — sans serveur, sans trace.</p>
 </header>
 
 <div class="card">
-  <h2>1 · Préparer l'envoi</h2>
-  <div class="steps"><b>➊</b> ini code · <b>➋</b> choisir les fichiers · <b>➌</b> donner le code</div>
-  <button id="btnSender">🚀 Créer un code</button>
+  <h2>1 · Envoyer</h2>
+  <button id="btnSender">✨ Créer un code</button>
   <div id="senderArea" class="hidden">
     <div class="code-box" id="code"></div>
     <div class="row">
       <button id="btnCopy" class="ghost">📋 Copier</button>
       <button id="btnLink" class="ghost">🔗 Lien</button>
-      <button id="btnAdd" class="ghost">➕ Fichier/dossier</button>
+      <button id="btnAdd" class="ghost">➕ Fichier</button>
     </div>
     <div id="linkBox" class="hidden"></div>
     <div id="qrcode"></div>
-    <label>Fichiers à envoyer :</label>
+    <label>Fichiers :</label>
     <div id="inputs">
       <input type="file" class="picker" webkitdirectory directory multiple>
       <input type="file" class="picker" multiple>
@@ -76,24 +74,19 @@
   <div class="row">
     <input type="text" id="codeInput" placeholder="Code reçu">
     <button id="btnReceiver">🔗 Connecter</button>
-    <button id="btnAuto" class="ghost hidden">🚀 Auto</button>
   </div>
   <div id="files"></div>
   <div id="recvSpeed" class="speed hidden"></div>
 </div>
 
 <div class="card">
-  <h2>💬 Discussion</h2>
-  <div class="box" id="chatS"></div>
+  <h2>💬 Discussion chiffrée</h2>
+  <div class="box" id="chat"></div>
   <div class="row">
-    <input type="text" id="chatSInput" placeholder="Message…">
-    <button id="chatSBtn">Envoyer</button>
+    <input type="text" id="chatInput" placeholder="Message…">
+    <button id="chatBtn">Envoyer</button>
   </div>
-  <div class="box" id="chatR" style="display:none"></div>
-  <div class="row" id="chatRRow" style="display:none">
-    <input type="text" id="chatRInput" placeholder="Message…">
-    <button id="chatRBtn">Envoyer</button>
-  </div>
+  <p class="note">🔒 Aucun message n'est sauvegardé : le chat disparaît en rechargeant la page.</p>
 </div>
 
 <div class="card">
@@ -108,13 +101,15 @@
 <script>
 const log = m => document.getElementById('log').textContent += m + "\n";
 const rand = () => String(Math.floor(10000 + Math.random() * 90000));
-let sendConn = null;
+let sendConn = null, recvConn = null;
 
-// --- Chiffrement du chat (AES-GCM, clé dérivée du code) ---
+// --- Chiffrement AES-GCM du chat (clé dérivée du code) ---
 let chatKey = null;
 async function keyFrom(code) { const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('sendcode:' + code)); return crypto.subtle.importKey('raw', h, 'AES-GCM', false, ['encrypt', 'decrypt']); }
 async function enc(t) { const iv = crypto.getRandomValues(new Uint8Array(12)); const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, chatKey, new TextEncoder().encode(t)); return btoa(String.fromCharCode(...iv)) + ':' + btoa(String.fromCharCode(...new Uint8Array(ct))); }
 async function dec(s) { const [i, c] = s.split(':'); const u = x => new Uint8Array(atob(x).split('').map(ch => ch.charCodeAt(0))); const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: u(i) }, chatKey, u(c)); return new TextDecoder().decode(pt); }
+const chatBox = document.getElementById('chat');
+const say = (who, t) => chatBox.textContent += who + ' : ' + t + '\n';
 
 document.getElementById('themeBtn').onclick = () => document.body.classList.toggle('light');
 
@@ -139,7 +134,20 @@ document.getElementById('btnAdd').onclick = () => {
 
 document.getElementById('btnSender').onclick = () => {
   if (typeof Peer === 'undefined') { log('❌ Service de connexion indisponible (bloqueur de pub ?)'); return; }
+  // Reset complet : éviter le double QR / double code
+  document.getElementById('code').textContent = '';
+  document.getElementById('qrcode').innerHTML = '';
+  document.getElementById('linkBox').classList.add('hidden');
+  document.getElementById('linkBox').innerHTML = '';
+  document.getElementById('inputs').innerHTML = '<input type="file" class="picker" webkitdirectory directory multiple><input type="file" class="picker" multiple>';
+  sendConn = null;
+  const btn = document.getElementById('btnSendFiles'); btn.disabled = true; btn.classList.add('hidden');
+  // masquer la section et recréer
+  document.getElementById('senderArea').classList.remove('hidden');
+  document.getElementById('progSend').classList.add('hidden');
+  document.getElementById('speedSend').classList.add('hidden');
   createSenderPeer(rand());
+  btn.classList.remove('hidden');
 };
 
 function createSenderPeer(code) {
@@ -160,9 +168,9 @@ function setupPeer(peer, code) {
     document.getElementById('linkBox').classList.remove('hidden');
   };
   peer.on('open', async () => {
-    document.getElementById('senderArea').classList.remove('hidden');
     document.getElementById('code').textContent = code;
     log('🔑 Code prêt : ' + code);
+    document.getElementById('qrcode').innerHTML = '';
     new QRCode(document.getElementById('qrcode'), code);
     chatKey = await keyFrom(code);
   });
@@ -170,7 +178,7 @@ function setupPeer(peer, code) {
     if (!sendConn) { log('⚠️ Pas de receveur connecté'); return; }
     const files = [...document.querySelectorAll('input.picker')].flatMap(i => [...i.files]);
     if (!files.length) { log('⚠️ Ajoute d\'abord des fichiers'); return; }
-    document.getElementById('btnSendFiles').disabled = true;
+    const btn = document.getElementById('btnSendFiles'); btn.disabled = true;
     document.getElementById('progSend').classList.remove('hidden');
     document.getElementById('speedSend').classList.remove('hidden');
     const conn = sendConn;
@@ -195,35 +203,30 @@ function setupPeer(peer, code) {
     }
     conn.send({ type: 'done' });
     log('🎉 Terminé en ' + ((Date.now() - t0) / 1000).toFixed(1) + 's !');
-    document.getElementById('btnSendFiles').disabled = false;
+    btn.disabled = false;
   };
   peer.on('connection', conn => {
     sendConn = conn;
     conn.on('open', () => log('✅ Receveur connecté !'));
     conn.on('data', async msg => {
-      if (msg.type === 'chat') { try { document.getElementById('chatS').textContent += '👤 Eux : ' + await dec(msg.data) + '\n'; } catch { log('⚠️ message illisible'); } }
-      if (msg.type === 'ready') {
-        document.getElementById('btnSendFiles').disabled = false;
-        log('💡 Receveur prêt — appuie sur Envoyer');
-      }
+      if (msg.type === 'chat') { try { say('👤 Eux', await dec(msg.data)); } catch { log('⚠️ message illisible'); } }
+      if (msg.type === 'ready') { document.getElementById('btnSendFiles').disabled = false; log('💡 Receveur prêt — appuie sur Envoyer'); }
     });
   });
-};
+}
 
-const connectRecv = code => {
+function connectRecv(code) {
   const peer = new Peer();
   let cur = null, last = 0, lastT = Date.now();
   document.getElementById('recvSpeed').classList.remove('hidden');
-  document.getElementById('chatR').style.display = 'block';
-  document.getElementById('chatRRow').style.display = 'flex';
   peer.on('open', async () => {
     const conn = peer.connect(code, { serialization: 'binary' });
-    window._conn = conn;
+    recvConn = conn;
     chatKey = await keyFrom(code);
     let gotFirst = false;
     conn.on('open', () => {
       log('🔗 Connecté à ' + code);
-      const iv = setInterval(() => { if (!gotFirst) conn.send({ type: 'ready' }); else clearInterval(iv); }, 800);
+      const iv = setInterval(() => { gotFirst ? clearInterval(iv) : conn.send({ type: 'ready' }); }, 800);
       conn.send({ type: 'ready' });
       lastT = Date.now();
       window._stopReady = () => { gotFirst = true; clearInterval(iv); };
@@ -248,16 +251,20 @@ const connectRecv = code => {
         cur = null;
       }
       else if (msg.type === 'done') log('🎉 Tous les fichiers reçus !');
-      else if (msg.type === 'chat') { try { document.getElementById('chatR').textContent += '👤 Eux : ' + await dec(msg.data) + '\n'; } catch { log('⚠️ message illisible'); } }
+      else if (msg.type === 'chat') { try { say('👤 Eux', await dec(msg.data)); } catch { log('⚠️ message illisible'); } }
     });
     conn.on('error', e => log('❌ ' + e));
   });
   peer.on('error', e => log('❌ ' + e.type + ' (code inconnu ?)'));
-};
+}
 document.getElementById('btnReceiver').onclick = () => { const c = document.getElementById('codeInput').value.trim(); if (!c) { log('⚠️ Entre le code'); return; } connectRecv(c); };
-document.getElementById('btnAuto').onclick = () => connectRecv(urlCode);
-document.getElementById('chatSBtn').onclick = () => { const t = document.getElementById('chatSInput').value.trim(); if (t && sendConn) { enc(t).then(e => sendConn.send({ type: 'chat', data: e })); document.getElementById('chatS').textContent += '🧑 Moi : ' + t + '\n'; } document.getElementById('chatSInput').value = ''; };
-document.getElementById('chatRBtn').onclick = () => { const t = document.getElementById('chatRInput').value.trim(); if (t && window._conn) { enc(t).then(e => window._conn.send({ type: 'chat', data: e })); document.getElementById('chatR').textContent += '🧑 Moi : ' + t + '\n'; } document.getElementById('chatRInput').value = ''; };
+document.getElementById('chatBtn').onclick = async () => {
+  const t = document.getElementById('chatInput').value.trim();
+  const conn = sendConn || recvConn;
+  if (t && conn && chatKey) { conn.send({ type: 'chat', data: await enc(t) }); say('🧑 Moi', t); }
+  else if (t && !conn) log('⚠️ Pas encore connecté');
+  document.getElementById('chatInput').value = '';
+};
 </script>
 </body>
 </html>
