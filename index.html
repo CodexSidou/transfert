@@ -125,7 +125,11 @@ renderHist();
 const addHist = n => { hist.unshift({ name: n, date: new Date().toLocaleString() }); localStorage.setItem('sc_history', JSON.stringify(hist.slice(0, 20))); renderHist(); };
 
 const urlCode = new URLSearchParams(location.search).get('code');
-if (urlCode) { document.getElementById('codeInput').value = urlCode; document.getElementById('btnAuto').classList.remove('hidden'); }
+if (urlCode) {
+  document.getElementById('codeInput').value = urlCode;
+  log('🔗 Lien reçu — connexion automatique…');
+  setTimeout(() => connectRecv(urlCode), 800);
+}
 
 document.getElementById('btnCopy').onclick = () => { navigator.clipboard.writeText(document.getElementById('code').textContent); log('📋 Code copié'); };
 document.getElementById('btnAdd').onclick = () => {
