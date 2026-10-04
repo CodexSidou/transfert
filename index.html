@@ -51,10 +51,10 @@
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script>
 const log = m => document.getElementById('log').textContent += m + "\n";
-const rand = () => Math.random().toString(36).slice(2, 8).toUpperCase();
+const rand = () => String(Math.floor(10000 + Math.random() * 90000));
 
 document.getElementById('btnSender').onclick = () => {
-  const code = 'sg-' + rand();
+  const code = rand();
   const peer = new Peer(code);
   peer.on('open', () => {
     document.getElementById('senderArea').classList.remove('hidden');
@@ -68,7 +68,7 @@ document.getElementById('btnSender').onclick = () => {
         const files = [...document.getElementById('folder').files];
         if (!files.length) { log('⚠️ Choisis d\'abord un dossier'); return; }
         document.getElementById('progSend').classList.remove('hidden');
-        const CHUNK = 64 * 1024;
+        const CHUNK = 16 * 1024;
         const total = files.reduce((s, f) => s + f.size, 0) || 1;
         let sent = 0, done = 0;
         for (const f of files) {
@@ -78,6 +78,9 @@ document.getElementById('btnSender').onclick = () => {
             conn.send({ type: 'chunk', data: buf });
             sent += buf.byteLength;
             document.getElementById('progSend').value = sent / total * 100;
+            while (conn.dataChannel && conn.dataChannel.bufferedAmount > 4 * 1024 * 1024) {
+              await new Promise(r => setTimeout(r, 100));
+            }
             await new Promise(r => setTimeout(r, 0));
           }
           conn.send({ type: 'fileend' });
