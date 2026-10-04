@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SendCode — نقل الملفات برمز</title>
+<title data-ar="SendCode — نقل الملفات برمز" data-fr="SendCode — Transfert par code">SendCode — نقل الملفات برمز</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#6366f1">
 <link rel="apple-touch-icon" href="icon.svg">
@@ -26,8 +26,8 @@
   button:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 8px 20px rgba(129,140,248,.45); }
   button:disabled { opacity:.45; cursor:not-allowed; }
   button.ghost { background:transparent; color:#a5b4fc; border:1px solid #6366f1; }
-  input[type=text] { padding:11px 14px; border-radius:11px; border:1px solid #4f46e5; background:rgba(0,0,0,.3); color:#fff; width:100%; max-width:240px; font-size:16px; }
-  body.light input[type=text] { background:#f8fafc; color:#0f172a; border-color:#c7d2fe; }
+  input[type=text], input[type=password] { padding:11px 14px; border-radius:11px; border:1px solid #4f46e5; background:rgba(0,0,0,.3); color:#fff; width:100%; max-width:240px; font-size:16px; }
+  body.light input[type=text], body.light input[type=password] { background:#f8fafc; color:#0f172a; border-color:#c7d2fe; }
   input[type=file] { margin:6px 0; color:#94a3b8; font-size:13px; }
   .code-box { font-size:44px; letter-spacing:12px; font-family:Consolas,monospace; color:#a5b4fc; background:rgba(0,0,0,.35); border:2px dashed #818cf8; border-radius:16px; padding:14px 26px; display:inline-block; margin:16px 0 10px; direction:ltr; }
   body.light .code-box { background:#f8fafc; color:#6366f1; }
@@ -39,74 +39,79 @@
   body.light #files a, body.light .history-item { background:#f1f5f9; color:#6d28d9; }
   .row { display:flex; gap:8px; align-items:center; margin-top:8px; flex-wrap:wrap; }
   .hidden { display:none; }
-  #themeBtn { position:fixed; top:18px; left:18px; border-radius:50%; width:42px; height:42px; padding:0; font-size:18px; }
+  #floatingBtns { position:fixed; top:18px; left:18px; display:flex; gap:6px; z-index:10; }
+  #floatingBtns button { border-radius:50%; width:42px; height:42px; padding:0; font-size:16px; }
   #qrcode { background:#fff; padding:10px; border-radius:12px; display:inline-block; margin-top:12px; direction:ltr; }
   .note { font-size:12px; color:#94a3b8; margin-top:10px; }
+  .thumb { width:64px; height:64px; object-fit:cover; border-radius:8px; vertical-align:middle; margin-inline-end:8px; }
 </style>
 </head>
 <body>
-<button id="themeBtn" class="ghost">🌓</button>
+<div id="floatingBtns">
+  <button id="themeBtn" class="ghost">🌓</button>
+  <button id="langBtn" class="ghost">FR</button>
+</div>
 <header>
   <h1>Send<b>Code</b></h1>
-  <p>مجلدات وصور وملفات ZIP وRAR… بين جهازين مباشرة — بدون خادم وبدون أثر.</p>
-  <p style="margin-top:6px;font-size:13px">📱 يعمل من الكمبيوتر أو الهاتف (أحدث إصدارات Chrome وEdge وSafari) — حاسوب ← حاسوب، حاسوب ← هاتف، هاتف ← حاسوب.</p>
+  <p data-ar="مجلدات وصور وملفات ZIP وRAR… بين جهازين مباشرة — بدون خادم وبدون أثر." data-fr="Dossiers, images, ZIP, RAR… entre 2 appareils directement — sans serveur, sans trace.">مجلدات وصور وملفات ZIP وRAR… بين جهازين مباشرة — بدون خادم وبدون أثر.</p>
+  <p style="margin-top:6px;font-size:13px" data-ar="📱 يعمل من الكمبيوتر أو الهاتف (أحدث الإصدارات Chrome وEdge وSafari) — حاسوب ↔ حاسوب، حاسوب ↔ هاتف، هاتف ↔ حاسوب." data-fr="📱 Fonctionne depuis PC ou téléphone (Chrome, Edge, Safari récents) — PC ↔ PC, PC ↔ téléphone, téléphone ↔ PC.">📱 يعمل من الكمبيوتر أو الهاتف (أحدث الإصدارات Chrome وEdge وSafari) — حاسوب ↔ حاسوب، حاسوب ↔ هاتف، هاتف ↔ حاسوب.</p>
 </header>
 
-<div id="statusConn" class="box" style="text-align:center;max-width:300px;margin-bottom:18px">🔴 غير متصل</div>
+<div id="statusConn" class="box" style="text-align:center;max-width:300px;margin-bottom:18px" data-ar="🔴 غير متصل" data-fr="🔴 Hors ligne">🔴 غير متصل</div>
 
 <div class="card">
-  <h2>1 · إرسال</h2>
-  <button id="btnSender">✨ إنشاء رمز</button>
+  <h2 data-ar="1 · إرسال" data-fr="1 · Envoyer">1 · إرسال</h2>
+  <button id="btnSender" data-ar="✨ إنشاء رمز" data-fr="✨ Créer un code">✨ إنشاء رمز</button>
   <div id="senderArea" class="hidden">
     <div class="code-box" id="code"></div>
     <div class="row">
-      <input type="password" id="passInput" placeholder="كلمة مرور (اختيارية)" style="max-width:200px">
+      <input type="password" id="passInput" data-ar="كلمة مرور (اختيارية)" data-fr="Mot de passe (optionnel)" placeholder="كلمة مرور (اختيارية)" style="max-width:200px">
     </div>
     <div class="row">
-      <button id="btnCopy" class="ghost">📋 نسخ</button>
-      <button id="btnLink" class="ghost">🔗 رابط</button>
-      <button id="btnAdd" class="ghost">➕ ملف</button>
+      <button id="btnCopy" class="ghost" data-ar="📋 نسخ" data-fr="📋 Copier">📋 نسخ</button>
+      <button id="btnLink" class="ghost" data-ar="🔗 رابط" data-fr="🔗 Lien">🔗 رابط</button>
+      <button id="btnAdd" class="ghost" data-ar="➕ ملف" data-fr="➕ Fichier">➕ ملف</button>
     </div>
     <div id="linkBox" class="hidden"></div>
     <div id="qrcode"></div>
-    <label>الملفات (أولل محدد = مجلد · الثاني = ملفات · على الهاتف يمكن اختيار الصور أيضًا) :</label>
+    <label data-ar="الملفات (أول محدد = مجلد · الثاني = ملفات · على الهاتف يمكن اختيار الصور أيضًا) :" data-fr="Fichiers (1er = dossier · 2e = fichiers · sur téléphone vous pouvez aussi choisir Photos) :">الملفات (أول محدد = مجلد · الثاني = ملفات · على الهاتف يمكن اختيار الصور أيضًا) :</label>
     <div id="inputs">
       <input type="file" class="picker" webkitdirectory directory multiple>
       <input type="file" class="picker" multiple>
       <input type="file" id="photos" accept="image/*" multiple class="picker hidden">
     </div>
     <div id="pickedList"></div>
-    <button id="btnPhotos" class="ghost">📷 إرسال الصور</button>
-    <button id="btnSendFiles" disabled>📤 إرسال الملفات</button>
+    <button id="btnPhotos" class="ghost" data-ar="📷 إرسال الصور" data-fr="📷 Envoyer des photos">📷 إرسال الصور</button>
+    <button id="btnSendFiles" disabled data-ar="📤 إرسال الملفات" data-fr="📤 Envoyer les fichiers">📤 إرسال الملفات</button>
     <progress id="progSend" class="hidden" value="0" max="100"></progress>
     <div id="speedSend" class="speed hidden"></div>
   </div>
 </div>
 
 <div class="card">
-  <h2>2 · استقبال</h2>
+  <h2 data-ar="2 · استقبال" data-fr="2 · Recevoir">2 · استقبال</h2>
   <div class="row">
-    <input type="text" id="codeInput" placeholder="الرمز المستلَم">
-    <button id="btnReceiver">🔗 اتصال</button>
-    <input type="password" id="passRecv" placeholder="كلمة المرور" style="max-width:140px">
+    <input type="text" id="codeInput" data-ar="الرمز المستلَم" data-fr="Code reçu" placeholder="الرمز المستلَم">
+    <button id="btnReceiver" data-ar="🔗 اتصال" data-fr="🔗 Connecter">🔗 اتصال</button>
+    <input type="password" id="passRecv" data-ar="كلمة المرور" data-fr="Mot de passe" placeholder="كلمة المرور" style="max-width:140px">
   </div>
   <div id="files"></div>
   <div id="recvSpeed" class="speed hidden"></div>
 </div>
 
 <div class="card">
-  <h2>💬 محادثة مشفّرة</h2>
+  <h2 data-ar="💬 محادثة مشفّرة" data-fr="💬 Discussion chiffrée">💬 محادثة مشفّرة</h2>
   <div class="box" id="chat"></div>
   <div class="row">
-    <input type="text" id="chatInput" placeholder="رسالة…">
-    <button id="chatBtn">إرسال</button>
+    <input type="text" id="chatInput" data-ar="رسالة…" data-fr="Message…" placeholder="رسالة…">
+    <button id="chatBtn" data-ar="إرسال" data-fr="Envoyer">إرسال</button>
   </div>
-  <p class="note">🔒 لا يُحفظ أي رسالة: تختفي المحادثة عند إعادة تحميل الصفحة.</p>
+  <p class="note" data-ar="🔒 لا يُحفظ أي رسالة: تختفي المحادثة عند إعادة تحميل الصفحة." data-fr="🔒 Aucun message n'est sauvegardé : le chat disparaît au rechargement.">🔒 لا يُحفظ أي رسالة: تختفي المحادثة عند إعادة تحميل الصفحة.</p>
 </div>
 
 <div class="card">
-  <h2>🕓 السجل</h2>
-  <button id="btnClearHist" class="ghost">🗑️ مسح السجل</button>
+  <h2 data-ar="🕓 السجل" data-fr="🕓 Historique">🕓 السجل</h2>
+  <button id="btnClearHist" class="ghost" data-ar="🗑️ مسح السجل" data-fr="🗑️ Vider l'historique">🗑️ مسح السجل</button>
   <div id="history"></div>
 </div>
 
@@ -115,12 +120,13 @@
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
+let LANG = 'ar';
+const t = (ar, fr) => LANG === 'ar' ? ar : fr;
 const log = m => document.getElementById('log').textContent += m + "\n";
 const rand = () => String(Math.floor(10000 + Math.random() * 90000));
 let sendConn = null, recvConn = null;
-
-// --- تشفير AES-GCM للمحادثة (مفتاح مشتق من الرمز) ---
 let chatKey = null;
+
 async function keyFrom(code, pass) { const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('sendcode:' + code + ':' + (pass || ''))); return crypto.subtle.importKey('raw', h, 'AES-GCM', false, ['encrypt', 'decrypt']); }
 async function enc(t) { const iv = crypto.getRandomValues(new Uint8Array(12)); const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, chatKey, new TextEncoder().encode(t)); return btoa(String.fromCharCode(...iv)) + ':' + btoa(String.fromCharCode(...new Uint8Array(ct))); }
 async function dec(s) { const [i, c] = s.split(':'); const u = x => new Uint8Array(atob(x).split('').map(ch => ch.charCodeAt(0))); const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: u(i) }, chatKey, u(c)); return new TextDecoder().decode(pt); }
@@ -132,16 +138,31 @@ function startPing(conn) {
   send(); const iv = setInterval(send, 3000);
   conn.on('data', msg => {
     if (msg.type === 'ping') conn.send({ type: 'pong', t: msg.t });
-    else if (msg.type === 'pong') setStatus('🟢 متصل — الإستجابة ' + (Date.now() - msg.t) + ' ms');
+    else if (msg.type === 'pong') setStatus('🟢 ' + t('متصل', 'Connecté') + ' — ' + t('الإستجابة', 'réactivité') + ' ' + (Date.now() - msg.t) + ' ms');
   });
-  conn.on('close', () => { clearInterval(iv); setStatus('🔴 غير متصل'); });
+  conn.on('close', () => { clearInterval(iv); setStatus('🔴 ' + t('غير متصل', 'Hors ligne')); });
 }
 
+function applyLang(l) {
+  LANG = l;
+  document.documentElement.lang = l;
+  document.documentElement.dir = l === 'ar' ? 'rtl' : 'ltr';
+  document.title = l === 'ar' ? 'SendCode — نقل الملفات برمز' : 'SendCode — Transfert par code';
+  document.querySelectorAll('[data-ar]').forEach(el => {
+    const v = el.dataset[l];
+    if (!v) return;
+    if (el.placeholder !== undefined && el.tagName === 'INPUT') el.placeholder = v;
+    else el.textContent = v;
+  });
+  document.getElementById('langBtn').textContent = l === 'ar' ? 'FR' : 'العربية';
+  renderHist();
+}
+document.getElementById('langBtn').onclick = () => applyLang(LANG === 'ar' ? 'fr' : 'ar');
 document.getElementById('themeBtn').onclick = () => document.body.classList.toggle('light');
 
 const hist = JSON.parse(localStorage.getItem('sc_history') || '[]');
 const renderHist = () => document.getElementById('history').innerHTML =
-  hist.map((h, i) => `<div class="history-item">📄 ${h.name} — ${h.date} ${h.url ? `<a class="ghost" href="${h.url}" download style="padding:2px 8px;font-size:12px;text-decoration:none;color:#a5b4fc;border:1px solid #6366f1;border-radius:8px">⬇ تحميل</a>` : ''} <button class="ghost" onclick="delHist(${i})" style="padding:2px 8px;font-size:12px">🗑️</button></div>`).join('') || '<i>فارغ</i>';
+  hist.map((h, i) => `<div class="history-item">📄 ${h.name} — ${h.date} ${h.url ? `<a class="ghost" href="${h.url}" download style="padding:2px 8px;font-size:12px;text-decoration:none;color:#a5b4fc;border:1px solid #6366f1;border-radius:8px">⬇ ${t('تحميل','Télécharger')}</a>` : ''} <button class="ghost" onclick="delHist(${i})" style="padding:2px 8px;font-size:12px">🗑️</button></div>`).join('') || '<i>' + t('فارغ','vide') + '</i>';
 renderHist();
 const saveHist = () => localStorage.setItem('sc_history', JSON.stringify(hist.slice(0, 20).map(({ url, ...r }) => r)));
 window.delHist = i => { hist.splice(i, 1); saveHist(); renderHist(); };
@@ -151,15 +172,18 @@ const addHist = (n, url) => { hist.unshift({ name: n, date: new Date().toLocaleS
 const urlCode = new URLSearchParams(location.search).get('code');
 if (urlCode) {
   document.getElementById('codeInput').value = urlCode;
-  log('🔗 تم استلام الرابط — اتصال تلقائي…');
+  log('🔗 ' + t('تم استلام الرابط — اتصال تلقائي…', 'Lien reçu — connexion automatique…'));
   setTimeout(() => connectRecv(urlCode), 800);
 }
 
-document.getElementById('btnCopy').onclick = () => { navigator.clipboard.writeText(document.getElementById('code').textContent); log('📋 تم نسخ الرمز'); };
+document.getElementById('btnCopy').onclick = () => { navigator.clipboard.writeText(document.getElementById('code').textContent); log('📋 ' + t('تم نسخ الرمز', 'Code copié')); };
 const picked = [];
 function renderPicked() {
-  document.getElementById('pickedList').innerHTML = picked.map((f, i) =>
-    `<div class="history-item">📄 ${f.webkitRelativePath || f.name} — ${(f.size/1048576).toFixed(2)} MB <button class="ghost" onclick="delPicked(${i})" style="padding:2px 8px;font-size:12px">🗑️</button></div>`).join('');
+  document.getElementById('pickedList').innerHTML = picked.map((f, i) => {
+    const isImg = f.type && f.type.startsWith('image/');
+    const thumb = isImg ? `<img class="thumb" src="${URL.createObjectURL(f)}">` : '';
+    return `<div class="history-item">${thumb}📄 ${f.webkitRelativePath || f.name} — ${(f.size/1048576).toFixed(2)} MB <button class="ghost" onclick="delPicked(${i})" style="padding:2px 8px;font-size:12px">🗑️</button></div>`;
+  }).join('');
 }
 window.delPicked = i => { picked.splice(i, 1); renderPicked(); };
 document.getElementById('inputs').addEventListener('change', e => {
@@ -176,8 +200,7 @@ document.getElementById('btnAdd').onclick = () => {
 
 document.getElementById('btnPhotos').onclick = () => document.getElementById('photos').click();
 document.getElementById('btnSender').onclick = () => {
-  if (typeof Peer === 'undefined') { log('❌ خدمة الاتصال غير متاحة (مانع إعلانات؟)'); return; }
-  // إعادة ضبط كاملة: منع تكرار QR / الرمز
+  if (typeof Peer === 'undefined') { log('❌ ' + t('خدمة الاتصال غير متاحة (مانع إعلانات؟)', 'Service de connexion indisponible (bloqueur de pub ?)')); return; }
   document.getElementById('code').textContent = '';
   document.getElementById('qrcode').innerHTML = '';
   document.getElementById('linkBox').classList.add('hidden');
@@ -196,9 +219,9 @@ document.getElementById('btnSender').onclick = () => {
 function createSenderPeer(code) {
   let peer;
   try { peer = new Peer(code); } catch (e) { log('❌ ' + e.message); return; }
-  log('⏳ جارٍ الاتصال بالخادم…');
+  log('⏳ ' + t('جارٍ الاتصال بالخادم…', 'Connexion au serveur…'));
   peer.on('error', e => {
-    if (e.type === 'unavailable-id') { log('⚠️ الرمز مستخدم، محاولة برمز جديد…'); createSenderPeer(rand()); }
+    if (e.type === 'unavailable-id') { log('⚠️ ' + t('الرمز مستخدم، محاولة جديدة…', 'Code déjà pris, nouvel essai…')); createSenderPeer(rand()); }
     else log('❌ ' + e.type + ' : ' + (e.message || ''));
   });
   setupPeer(peer, code);
@@ -212,16 +235,16 @@ function setupPeer(peer, code) {
   };
   peer.on('open', async () => {
     document.getElementById('code').textContent = code;
-    log('🔑 الرمز جاهز: ' + code);
-    setStatus('🟡 الرمز جاهز — في انتظار المستقبِل');
+    log('🔑 ' + t('الرمز جاهز: ', 'Code prêt : ') + code);
+    setStatus('🟡 ' + t('الرمز جاهز — في انتظار المستقبِل', 'Code prêt — en attente du receveur'));
     document.getElementById('qrcode').innerHTML = '';
     new QRCode(document.getElementById('qrcode'), code);
     chatKey = await keyFrom(code, document.getElementById('passInput').value);
   });
   document.getElementById('btnSendFiles').onclick = async () => {
-    if (!sendConn) { log('⚠️ لا يوجد مستقبِل متصل'); return; }
+    if (!sendConn) { log('⚠️ ' + t('لا يوجد مستقبِل متصل', 'Pas de receveur connecté')); return; }
     const files = picked.length ? picked : [...document.querySelectorAll('input.picker')].flatMap(i => [...i.files]);
-    if (!files.length) { log('⚠️ أضف ملفات أولاً'); return; }
+    if (!files.length) { log('⚠️ ' + t('أضف ملفات أولاً', 'Ajoute d\'abord des fichiers')); return; }
     const btn = document.getElementById('btnSendFiles'); btn.disabled = true;
     document.getElementById('progSend').classList.remove('hidden');
     document.getElementById('speedSend').classList.remove('hidden');
@@ -243,23 +266,23 @@ function setupPeer(peer, code) {
       }
       conn.send({ type: 'fileend' });
       addHist(f.name, URL.createObjectURL(f));
-      log('📄 تم إرسال: ' + f.name + ' (' + (++done) + '/' + files.length + ')');
+      log('📄 ' + t('تم إرسال: ', 'Envoyé : ') + f.name + ' (' + (++done) + '/' + files.length + ')');
     }
     conn.send({ type: 'done' });
-    log('🎉 انتهى في ' + ((Date.now() - t0) / 1000).toFixed(1) + ' ثا');
+    log('🎉 ' + t('انتهى في ', 'Terminé en ') + ((Date.now() - t0) / 1000).toFixed(1) + ' ' + t('ثا', 's'));
     btn.disabled = false;
   };
   peer.on('connection', conn => {
     sendConn = conn;
-    conn.on('open', () => { setStatus('🟡 مستقبِل متصل…'); log('✅ المستقبِل متصل!'); startPing(conn); });
+    conn.on('open', () => { setStatus('🟡 ' + t('مستقبِل متصل…', 'Receveur connecté…')); log('✅ ' + t('المستقبِل متصل!', 'Receveur connecté !')); startPing(conn); });
     conn.on('data', async msg => {
-      if (msg.type === 'chat') { try { say('👤 هم', await dec(msg.data)); } catch { log('⚠️ رسالة غير مقروءة'); } }
+      if (msg.type === 'chat') { try { say('👤 ' + t('هم', 'Eux'), await dec(msg.data)); } catch { log('⚠️ ' + t('رسالة غير مقروءة', 'message illisible')); } }
       if (msg.type === 'ready') {
         const expected = document.getElementById('passInput').value || '';
-        if (expected && msg.pass !== expected) { log('🔒 كلمة المرور غير صحيحة — تم رفض الوصول'); return; }
-        document.getElementById('btnSendFiles').disabled = false; log('💡 المستقبِل جاهز — اضغط إرسال');
+        if (expected && msg.pass !== expected) { log('🔒 ' + t('كلمة المرور غير صحيحة — تم رفض الوصول', 'Mot de passe incorrect — accès refusé')); return; }
+        document.getElementById('btnSendFiles').disabled = false; log('💡 ' + t('المستقبِل جاهز — اضغط إرسال', 'Receveur prêt — appuie sur Envoyer'));
       }
-      if (msg.type === 'complete') log('📩 وصلت جميع الملفات للمستقبِل ✅');
+      if (msg.type === 'complete') log('📩 ' + t('وصلت جميع الملفات للمستقبِل ✅', 'Le destinataire a tout reçu ✅'));
     });
   });
 }
@@ -274,8 +297,8 @@ function connectRecv(code) {
     chatKey = await keyFrom(code, document.getElementById('passRecv').value);
     let gotFirst = false;
     conn.on('open', () => {
-      setStatus('🟡 جارٍ الاتصال…');
-      log('🔗 متصل بالرمز ' + code);
+      setStatus('🟡 ' + t('جارٍ الاتصال…', 'En connexion…'));
+      log('🔗 ' + t('متصل بالرمز ', 'Connecté à ') + code);
       startPing(conn);
       const iv = setInterval(() => { gotFirst ? clearInterval(iv) : conn.send({ type: 'ready', pass: document.getElementById('passRecv').value || '' }); }, 800);
       conn.send({ type: 'ready', pass: document.getElementById('passRecv').value || '' });
@@ -295,26 +318,26 @@ function connectRecv(code) {
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = cur.name.split('/').pop();
-        a.textContent = (blob.type.startsWith('image/') ? '🖼️ ' : '📥 ') + cur.name + ' — ' + (blob.size / 1048576).toFixed(2) + ' MB' + (blob.type.startsWith('image/') ? ' (اضغط للفتح)' : ' (اضغط للتنزيل)');
+        a.textContent = (blob.type.startsWith('image/') ? '🖼️ ' : '📥 ') + cur.name + ' — ' + (blob.size / 1048576).toFixed(2) + ' MB' + (blob.type.startsWith('image/') ? ' (' + t('اضغط للفتح', 'tap pour ouvrir') + ')' : ' (' + t('اضغط للتنزيل', 'tap pour télécharger') + ')');
         if (blob.type.startsWith('image/')) a.target = '_blank';
         document.getElementById('files').appendChild(a);
-        addHist(cur.name + ' (مستلَم)', a.href);
-        log('✅ تم الاستلام: ' + cur.name + (blob.type.startsWith('image/') ? '' : ' — افتحه لاحقًا من تطبيق الملفات للتثبيت'));
+        addHist(cur.name + ' (' + t('مستلَم', 'reçu') + ')', a.href);
+        log('✅ ' + t('تم الاستلام: ', 'Reçu : ') + cur.name + (blob.type.startsWith('image/') ? '' : ' — ' + t('افتحه لاحقًا من تطبيق الملفات للتثبيت', 'ouvre ensuite dans Fichiers pour installer')));
         cur = null;
       }
-      else if (msg.type === 'done') { log('🎉 وصلت جميع الملفات!'); try { conn.send({ type: 'complete' }); } catch {} }
-      else if (msg.type === 'chat') { try { say('👤 هم', await dec(msg.data)); } catch { log('⚠️ رسالة غير مقروءة'); } }
+      else if (msg.type === 'done') { log('🎉 ' + t('وصلت جميع الملفات!', 'Tous les fichiers reçus !')); try { conn.send({ type: 'complete' }); } catch {} }
+      else if (msg.type === 'chat') { try { say('👤 ' + t('هم', 'Eux'), await dec(msg.data)); } catch { log('⚠️ ' + t('رسالة غير مقروءة', 'message illisible')); } }
     });
     conn.on('error', e => log('❌ ' + e));
   });
-  peer.on('error', e => log('❌ ' + e.type + ' (رمز غير صالح؟)'));
+  peer.on('error', e => log('❌ ' + e.type + ' (' + t('رمز غير صالح؟', 'code inconnu ?') + ')'));
 }
-document.getElementById('btnReceiver').onclick = () => { const c = document.getElementById('codeInput').value.trim(); if (!c) { log('⚠️ أدخل الرمز'); return; } connectRecv(c); };
+document.getElementById('btnReceiver').onclick = () => { const c = document.getElementById('codeInput').value.trim(); if (!c) { log('⚠️ ' + t('أدخل الرمز', 'Entre le code')); return; } connectRecv(c); };
 document.getElementById('chatBtn').onclick = async () => {
-  const t = document.getElementById('chatInput').value.trim();
+  const txt = document.getElementById('chatInput').value.trim();
   const conn = sendConn || recvConn;
-  if (t && conn && chatKey) { conn.send({ type: 'chat', data: await enc(t) }); say('🧑 أنا', t); }
-  else if (t && !conn) log('⚠️ لست متصلا بعد');
+  if (txt && conn && chatKey) { conn.send({ type: 'chat', data: await enc(txt) }); say('🧑 ' + t('أنا', 'Moi'), txt); }
+  else if (txt && !conn) log('⚠️ ' + t('لست متصلاً بعد', 'Pas encore connecté'));
   document.getElementById('chatInput').value = '';
 };
 </script>
