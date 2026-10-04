@@ -2,34 +2,49 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Transfert PC -> PC (code)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SendCode — Transfert par code</title>
 <style>
-  body { font-family: Segoe UI, Arial, sans-serif; background:#0f1720; color:#e5eef7; max-width:700px; margin:40px auto; padding:0 16px; }
-  h1 { color:#4fc3f7; }
-  button { background:#4fc3f7; color:#06202e; border:0; padding:10px 18px; border-radius:8px; font-size:16px; cursor:pointer; margin:6px 4px; }
-  input[type=text] { padding:10px; font-size:16px; border-radius:8px; border:1px solid #4fc3f7; width:180px; }
-  #code { font-size:28px; letter-spacing:4px; background:#132533; padding:10px 16px; border-radius:8px; display:inline-block; margin:10px 0; }
-  #log { white-space:pre-wrap; background:#132533; padding:12px; border-radius:8px; min-height:80px; margin-top:12px; }
-  progress { width:100%; height:18px; }
+  * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+  body { margin:0; min-height:100vh; background: radial-gradient(circle at 20% 0%, #1b3a4b, #0b1220 60%); color:#e8f2ff; padding:40px 16px; display:flex; flex-direction:column; align-items:center; }
+  h1 { font-size:34px; margin:0 0 4px; }
+  h1 span { color:#38bdf8; }
+  .sub { color:#94a3b8; margin:0 0 30px; }
+  .card { background:rgba(15,30,48,.75); border:1px solid #1e3a5f; border-radius:16px; padding:24px; width:100%; max-width:620px; margin-bottom:20px; box-shadow:0 10px 30px rgba(0,0,0,.35); }
+  .card h2 { margin-top:0; color:#38bdf8; font-size:18px; }
+  button { background:linear-gradient(135deg,#38bdf8,#0ea5e9); color:#04263b; font-weight:700; border:0; padding:11px 22px; border-radius:10px; font-size:15px; cursor:pointer; transition:.2s; }
+  button:hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(56,189,248,.4); }
+  input[type=text] { padding:11px 14px; font-size:16px; border-radius:10px; border:1px solid #2b4a6b; background:#0b1a2c; color:#e8f2ff; width:170px; }
+  input[type=file] { color:#94a3b8; margin-top:12px; }
+  #code { font-size:32px; letter-spacing:6px; font-family:Consolas,monospace; color:#38bdf8; background:#0b1a2c; border:1px dashed #38bdf8; padding:12px 22px; border-radius:12px; display:inline-block; margin:12px 0; }
+  #log { background:#0b1a2c; border-radius:10px; padding:14px; min-height:70px; white-space:pre-wrap; font-size:13px; color:#a5d8ff; margin-top:22px; max-width:620px; width:100%; }
+  progress { width:100%; height:14px; border-radius:8px; }
+  #files a { display:block; color:#7dd3fc; text-decoration:none; padding:8px 10px; background:#0b1a2c; border-radius:8px; margin-top:6px; }
+  #files a:hover { background:#12263d; }
+  .hidden { display:none; }
 </style>
 </head>
 <body>
-<h1>Transfert de fichiers par code</h1>
+<h1>Send<span>Code</span></h1>
+<p class="sub">Transfère un dossier de PC à PC, par simple code — P2P, sans serveur.</p>
 
-<h2>Envoyer (ce PC)</h2>
-<button id="btnSender">Créer un code</button>
-<div id="senderArea" style="display:none">
-  Ton code : <div id="code"></div>
-  <br>
-  <input type="file" id="folder" webkitdirectory directory multiple>
-  <br><br>
-  <progress id="progSend" value="0" max="100" style="display:none"></progress>
+<div class="card">
+  <h2>📤 Envoyer</h2>
+  <button id="btnSender">Créer un code</button>
+  <div id="senderArea" class="hidden">
+    <div id="code"></div>
+    <br>
+    <input type="file" id="folder" webkitdirectory directory multiple>
+    <progress id="progSend" value="0" max="100" class="hidden"></progress>
+  </div>
 </div>
 
-<h2>Recevoir (autre PC)</h2>
-<input type="text" id="codeInput" placeholder="entre le code">
-<button id="btnReceiver">Se connecter</button>
-<div id="files"></div>
+<div class="card">
+  <h2>📥 Recevoir</h2>
+  <input type="text" id="codeInput" placeholder="code reçu">
+  <button id="btnReceiver">Se connecter</button>
+  <div id="files"></div>
+</div>
 
 <div id="log"></div>
 
@@ -38,26 +53,24 @@
 const log = m => document.getElementById('log').textContent += m + "\n";
 const rand = () => Math.random().toString(36).slice(2, 8).toUpperCase();
 
-// ---------- SENDER ----------
 document.getElementById('btnSender').onclick = () => {
   const code = 'sg-' + rand();
   const peer = new Peer(code);
   peer.on('open', () => {
-    document.getElementById('senderArea').style.display = 'block';
+    document.getElementById('senderArea').classList.remove('hidden');
     document.getElementById('code').textContent = code;
-    log('Code prêt : ' + code + '  (donne-le au receveur)');
+    log('🔑 Code prêt : ' + code);
   });
   peer.on('connection', conn => {
-    conn.on('open', () => log('Receveur connecté !'));
+    conn.on('open', () => log('✅ Receveur connecté !'));
     conn.on('data', async msg => {
       if (msg.type === 'ready') {
         const files = [...document.getElementById('folder').files];
-        if (!files.length) { log('Choisis d\'abord un dossier'); return; }
-        document.getElementById('progSend').style.display = 'block';
+        if (!files.length) { log('⚠️ Choisis d\'abord un dossier'); return; }
+        document.getElementById('progSend').classList.remove('hidden');
         const CHUNK = 64 * 1024;
-        let done = 0;
         const total = files.reduce((s, f) => s + f.size, 0) || 1;
-        let sent = 0;
+        let sent = 0, done = 0;
         for (const f of files) {
           conn.send({ type: 'meta', name: f.webkitRelativePath || f.name, size: f.size });
           for (let off = 0; off < f.size; off += CHUNK) {
@@ -68,49 +81,42 @@ document.getElementById('btnSender').onclick = () => {
             await new Promise(r => setTimeout(r, 0));
           }
           conn.send({ type: 'fileend' });
-          done++;
-          log('Envoyé : ' + f.name + ' (' + done + '/' + files.length + ')');
+          log('📄 Envoyé : ' + f.name + ' (' + (++done) + '/' + files.length + ')');
         }
         conn.send({ type: 'done' });
-        log('Transfert terminé !');
+        log('🎉 Transfert terminé !');
       }
     });
   });
-  peer.on('error', e => log('Erreur : ' + e.type));
+  peer.on('error', e => log('❌ Erreur : ' + e.type));
 };
 
-// ---------- RECEIVER ----------
 document.getElementById('btnReceiver').onclick = () => {
   const code = document.getElementById('codeInput').value.trim();
-  if (!code) { log('Entre le code'); return; }
+  if (!code) { log('⚠️ Entre le code'); return; }
   const peer = new Peer();
+  let cur = null;
   peer.on('open', () => {
     const conn = peer.connect(code, { serialization: 'binary' });
-    conn.on('open', () => { log('Connecté à ' + code); conn.send({ type: 'ready' }); });
+    conn.on('open', () => { log('🔗 Connecté à ' + code); conn.send({ type: 'ready' }); });
     conn.on('data', msg => {
-      if (msg.type === 'meta') {
-        window._cur = { name: msg.name, size: msg.size, parts: [] };
-        log('Réception : ' + msg.name);
-      }
-      if (msg.type === 'chunk' && window._cur) {
-        window._cur.parts.push(msg.data);
-      }
-      if (msg.type === 'fileend' && window._cur) {
-        const blob = new Blob(window._cur.parts);
+      if (msg.type === 'meta') { cur = { name: msg.name, parts: [] }; log('📥 Réception : ' + msg.name); }
+      else if (msg.type === 'chunk' && cur) cur.parts.push(msg.data);
+      else if (msg.type === 'fileend' && cur) {
+        const blob = new Blob(cur.parts);
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = window._cur.name.split('/').pop();
-        a.textContent = '⬇ ' + window._cur.name + ' (' + blob.size + ' octets)';
-        a.style.display = 'block';
+        a.download = cur.name.split('/').pop();
+        a.textContent = '⬇ ' + cur.name + ' — ' + (blob.size / 1024).toFixed(0) + ' Ko';
         document.getElementById('files').appendChild(a);
-        log('Reçu : ' + window._cur.name);
-        window._cur = null;
+        log('✅ Reçu : ' + cur.name);
+        cur = null;
       }
-      if (msg.type === 'done') log('Tous les fichiers reçus !');
+      else if (msg.type === 'done') log('🎉 Tous les fichiers reçus !');
     });
-    conn.on('error', e => log('Erreur connexion : ' + e));
+    conn.on('error', e => log('❌ ' + e));
   });
-  peer.on('error', e => log('Erreur : ' + e.type + ' (code inconnu ?)'));
+  peer.on('error', e => log('❌ ' + e.type + ' (code inconnu ?)'));
 };
 </script>
 </body>
