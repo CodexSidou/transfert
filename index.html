@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Transfert PC -> PC (code)</title>
+<style>
+  body { font-family: Segoe UI, Arial, sans-serif; background:#0f1720; color:#e5eef7; max-width:700px; margin:40px auto; padding:0 16px; }
+  h1 { color:#4fc3f7; }
+  button { background:#4fc3f7; color:#06202e; border:0; padding:10px 18px; border-radius:8px; font-size:16px; cursor:pointer; margin:6px 4px; }
+  input[type=text] { padding:10px; font-size:16px; border-radius:8px; border:1px solid #4fc3f7; width:180px; }
+  #code { font-size:28px; letter-spacing:4px; background:#132533; padding:10px 16px; border-radius:8px; display:inline-block; margin:10px 0; }
+  #log { white-space:pre-wrap; background:#132533; padding:12px; border-radius:8px; min-height:80px; margin-top:12px; }
+  progress { width:100%; height:18px; }
+</style>
+</head>
+<body>
+<h1>Transfert de fichiers par code</h1>
+
+<h2>Envoyer (ce PC)</h2>
+<button id="btnSender">Créer un code</button>
+<div id="senderArea" style="display:none">
+  Ton code : <div id="code"></div>
+  <br>
+  <input type="file" id="folder" webkitdirectory directory multiple>
+  <br><br>
+  <progress id="progSend" value="0" max="100" style="display:none"></progress>
+</div>
+
+<h2>Recevoir (autre PC)</h2>
+<input type="text" id="codeInput" placeholder="entre le code">
+<button id="btnReceiver">Se connecter</button>
+<div id="files"></div>
+
+<div id="log"></div>
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+const log = m => document.getElementById('log').textContent += m + "\n";
+const rand = () => Math.random().toString(36).slice(2, 8).toUpperCase();
+
+// ---------- SENDER ----------
+document.getElementById('btnSender').onclick = () => {
+  const code = 'sg-' + rand();
+  const peer = new Peer(code);
+  peer.on('open', () => {
+    document.getElementById('senderArea').style.display = 'block';
+    document.getElementById('code').textContent = code;
+    log('Code prêt : ' + code + '  (donne-le au receveur)');
+  });
+  peer.on('connection', conn => {
+    conn.on('open', () => log('Receveur connecté !'));
+    conn.on('data', async msg => {
+      if (msg.type === 'ready') {
+        const files = [...document.getElementById('folder').files];
+        if (!files.length) { log('Choisis d\'abord un dossier'); return; }
+        document.getElementById('progSend').style.display = 'block';
+        const CHUNK = 64 * 1024;
+        let done = 0;
+        const total = files.reduce((s, f) => s + f.size, 0) || 1;
+        let sent = 0;
+        for (const f of files) {
+          conn.send({ type: 'meta', name: f.webkitRelativePath || f.name, size: f.size });
+          for (let off = 0; off < f.size; off += CHUNK) {
+            const buf = await f.slice(off, off + CHUNK).arrayBuffer();
+            conn.send({ type: 'chunk', data: buf });
+            sent += buf.byteLength;
+            document.getElementById('progSend').value = sent / total * 100;
+            await new Promise(r => setTimeout(r, 0));
+          }
+          conn.send({ type: 'fileend' });
+          done++;
+          log('Envoyé : ' + f.name + ' (' + done + '/' + files.length + ')');
+        }
+        conn.send({ type: 'done' });
+        log('Transfert terminé !');
+      }
+    });
+  });
+  peer.on('error', e => log('Erreur : ' + e.type));
+};
+
+// ---------- RECEIVER ----------
+document.getElementById('btnReceiver').onclick = () => {
+  const code = document.getElementById('codeInput').value.trim();
+  if (!code) { log('Entre le code'); return; }
+  const peer = new Peer();
+  peer.on('open', () => {
+    const conn = peer.connect(code, { serialization: 'binary' });
+    conn.on('open', () => { log('Connecté à ' + code); conn.send({ type: 'ready' }); });
+    conn.on('data', msg => {
+      if (msg.type === 'meta') {
+        window._cur = { name: msg.name, size: msg.size, parts: [] };
+        log('Réception : ' + msg.name);
+      }
+      if (msg.type === 'chunk' && window._cur) {
+        window._cur.parts.push(msg.data);
+      }
+      if (msg.type === 'fileend' && window._cur) {
+        const blob = new Blob(window._cur.parts);
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = window._cur.name.split('/').pop();
+        a.textContent = '⬇ ' + window._cur.name + ' (' + blob.size + ' octets)';
+        a.style.display = 'block';
+        document.getElementById('files').appendChild(a);
+        log('Reçu : ' + window._cur.name);
+        window._cur = null;
+      }
+      if (msg.type === 'done') log('Tous les fichiers reçus !');
+    });
+    conn.on('error', e => log('Erreur connexion : ' + e));
+  });
+  peer.on('error', e => log('Erreur : ' + e.type + ' (code inconnu ?)'));
+};
+</script>
+</body>
+</html>
