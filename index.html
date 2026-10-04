@@ -66,8 +66,10 @@
     <div id="inputs">
       <input type="file" class="picker" webkitdirectory directory multiple>
       <input type="file" class="picker" multiple>
+      <input type="file" id="photos" accept="image/*" multiple class="picker hidden">
     </div>
     <div id="pickedList"></div>
+    <button id="btnPhotos" class="ghost">📷 Envoyer des photos</button>
     <button id="btnSendFiles" disabled>📤 Envoyer les fichiers</button>
     <progress id="progSend" class="hidden" value="0" max="100"></progress>
     <div id="speedSend" class="speed hidden"></div>
@@ -164,6 +166,7 @@ document.getElementById('btnAdd').onclick = () => {
   document.getElementById('inputs').appendChild(i);
 };
 
+document.getElementById('btnPhotos').onclick = () => document.getElementById('photos').click();
 document.getElementById('btnSender').onclick = () => {
   if (typeof Peer === 'undefined') { log('❌ Service de connexion indisponible (bloqueur de pub ?)'); return; }
   // Reset complet : éviter le double QR / double code
@@ -171,7 +174,7 @@ document.getElementById('btnSender').onclick = () => {
   document.getElementById('qrcode').innerHTML = '';
   document.getElementById('linkBox').classList.add('hidden');
   document.getElementById('linkBox').innerHTML = '';
-  document.getElementById('inputs').innerHTML = '<input type="file" class="picker" webkitdirectory directory multiple><input type="file" class="picker" multiple>';
+  document.getElementById('inputs').innerHTML = '<input type="file" class="picker" webkitdirectory directory multiple><input type="file" class="picker" multiple><input type="file" id="photos" accept="image/*" multiple class="picker hidden">';
   picked.length = 0; renderPicked();
   sendConn = null;
   const btn = document.getElementById('btnSendFiles'); btn.disabled = true; btn.classList.add('hidden');
@@ -280,12 +283,11 @@ function connectRecv(code) {
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = cur.name.split('/').pop();
-        a.textContent = '⬇ ' + cur.name + ' — ' + (blob.size / 1048576).toFixed(2) + ' Mo';
-        if (blob.type.startsWith('image/')) { a.target = '_blank'; a.textContent = '🖼️ ' + cur.name + ' — ' + (blob.size / 1048576).toFixed(2) + ' Mo (ouvrir)'; }
+        a.textContent = (blob.type.startsWith('image/') ? '🖼️ ' : '📥 ') + cur.name + ' — ' + (blob.size / 1048576).toFixed(2) + ' Mo' + (blob.type.startsWith('image/') ? ' (tap pour ouvrir)' : ' (tap pour télécharger)');
+        if (blob.type.startsWith('image/')) a.target = '_blank';
         document.getElementById('files').appendChild(a);
         addHist(cur.name + ' (reçu)', a.href);
-        setTimeout(() => a.click(), 600); // téléchargement auto
-        log('✅ Reçu : ' + cur.name);
+        log('✅ Reçu : ' + cur.name + (blob.type.startsWith('image/') ? '' : ' — ouvre ensuite dans Fichiers pour installer'));
         cur = null;
       }
       else if (msg.type === 'done') log('🎉 Tous les fichiers reçus !');
