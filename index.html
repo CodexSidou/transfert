@@ -5,81 +5,95 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SendCode — Transfert par code</title>
 <style>
-  * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; transition: background .3s, color .3s; }
-  body { margin:0; min-height:100vh; background: radial-gradient(circle at 20% 0%, #1b3a4b, #0b1220 60%); color:#e8f2ff; padding:40px 16px; display:flex; flex-direction:column; align-items:center; }
-  body.light { background: linear-gradient(180deg,#e0f2fe,#f8fafc); color:#0f172a; }
-  h1 { font-size:34px; margin:0 0 4px; }
-  h1 span { color:#38bdf8; }
-  .sub { color:#94a3b8; margin:0 0 30px; }
-  body.light .sub { color:#475569; }
-  .card { background:rgba(15,30,48,.75); border:1px solid #1e3a5f; border-radius:16px; padding:24px; width:100%; max-width:620px; margin-bottom:20px; box-shadow:0 10px 30px rgba(0,0,0,.35); }
-  body.light .card { background:#ffffff; border-color:#cbd5e1; box-shadow:0 6px 20px rgba(0,0,0,.08); }
-  .card h2 { margin-top:0; color:#38bdf8; font-size:18px; }
-  button { background:linear-gradient(135deg,#38bdf8,#0ea5e9); color:#04263b; font-weight:700; border:0; padding:11px 22px; border-radius:10px; font-size:15px; cursor:pointer; }
-  button:hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(56,189,248,.4); }
-  button.small { padding:6px 12px; font-size:13px; margin-left:8px; }
-  input[type=text] { padding:11px 14px; font-size:16px; border-radius:10px; border:1px solid #2b4a6b; background:#0b1a2c; color:#e8f2ff; width:150px; }
-  body.light input[type=text] { background:#f1f5f9; color:#0f172a; }
-  input[type=file] { color:#94a3b8; margin-top:10px; display:block; }
-  #code { font-size:32px; letter-spacing:8px; font-family:Consolas,monospace; color:#38bdf8; background:#0b1a2c; border:1px dashed #38bdf8; padding:12px 22px; border-radius:12px; display:inline-block; margin:12px 0; }
-  body.light #code { background:#f1f5f9; }
-  #log { background:#0b1a2c; border-radius:10px; padding:14px; min-height:70px; white-space:pre-wrap; font-size:13px; color:#a5d8ff; margin-top:22px; max-width:620px; width:100%; }
-  .log { background:#0b1a2c; border-radius:10px; padding:10px; min-height:50px; max-height:160px; overflow-y:auto; white-space:pre-wrap; font-size:13px; color:#a5d8ff; margin:10px 0; }
-  body.light .log { background:#f1f5f9; color:#334155; }
-  body.light #log { background:#f1f5f9; color:#334155; }
-  progress { width:100%; height:14px; border-radius:8px; margin-top:10px; }
-  #files a, .history-item { display:block; color:#7dd3fc; text-decoration:none; padding:8px 10px; background:#0b1a2c; border-radius:8px; margin-top:6px; }
+  * { box-sizing: border-box; margin:0; padding:0; font-family: 'Segoe UI', system-ui, sans-serif; }
+  body { min-height:100vh; background: linear-gradient(160deg, #0f2027, #203a43, #2c5364); color:#eef7ff; padding:32px 16px 60px; display:flex; flex-direction:column; align-items:center; }
+  body.light { background: linear-gradient(160deg,#e0f2fe,#f0f9ff); color:#0f172a; }
+  header { text-align:center; margin-bottom:28px; }
+  header h1 { font-size:38px; letter-spacing:1px; }
+  header h1 b { color:#38bdf8; }
+  header p { color:#b8d4e8; margin-top:6px; font-size:15px; }
+  body.light header p { color:#475569; }
+  .card { background:rgba(255,255,255,.07); backdrop-filter: blur(8px); border:1px solid rgba(255,255,255,.15); border-radius:18px; padding:26px; width:100%; max-width:640px; margin-bottom:18px; }
+  body.light .card { background:#fff; border-color:#e2e8f0; }
+  .card h2 { color:#38bdf8; font-size:17px; margin-bottom:14px; text-transform:uppercase; letter-spacing:2px; }
+  label { display:block; font-size:13px; color:#9fc3dd; margin:12px 0 4px; }
+  body.light label { color:#64748b; }
+  button { background:#38bdf8; color:#06283b; font-weight:700; border:none; padding:11px 20px; border-radius:10px; cursor:pointer; font-size:14px; margin:4px 2px; }
+  button:hover { background:#7dd3fc; transform:translateY(-1px); }
+  button.ghost { background:transparent; color:#38bdf8; border:1px solid #38bdf8; }
+  input[type=text] { padding:11px 14px; border-radius:10px; border:1px solid rgba(56,189,248,.4); background:rgba(0,0,0,.25); color:#fff; width:100%; max-width:240px; font-size:16px; }
+  body.light input[type=text] { background:#f8fafc; color:#0f172a; border-color:#cbd5e1; }
+  input[type=file] { margin:6px 0; color:#b8d4e8; font-size:13px; }
+  .code-box { font-size:42px; letter-spacing:12px; font-family:Consolas,monospace; color:#38bdf8; background:rgba(0,0,0,.3); border:2px dashed #38bdf8; border-radius:14px; padding:14px 26px; display:inline-block; margin:16px 0 8px; }
+  body.light .code-box { background:#f8fafc; }
+  progress { width:100%; height:12px; border-radius:6px; margin-top:12px; }
+  .speed { font-family:Consolas,monospace; color:#7dd3fc; margin-top:8px; font-size:14px; }
+  .box { background:rgba(0,0,0,.25); border-radius:12px; padding:12px 14px; min-height:56px; max-height:170px; overflow-y:auto; font-size:13px; white-space:pre-wrap; margin:10px 0; color:#a5d8ff; }
+  body.light .box { background:#f1f5f9; color:#334155; }
+  #files a, .history-item { display:block; color:#7dd3fc; background:rgba(0,0,0,.25); padding:9px 12px; border-radius:9px; margin-top:6px; text-decoration:none; }
   body.light #files a, body.light .history-item { background:#f1f5f9; color:#0369a1; }
+  .row { display:flex; gap:8px; align-items:center; margin-top:8px; flex-wrap:wrap; }
   .hidden { display:none; }
-  #qrcode { margin:10px 0; background:#fff; padding:8px; display:inline-block; border-radius:8px; }
-  #themeBtn { position:fixed; top:16px; right:16px; }
-  .speed { color:#7dd3fc; font-family:Consolas,monospace; margin-top:6px; font-size:14px; }
+  #themeBtn { position:fixed; top:18px; right:18px; border-radius:50%; width:42px; height:42px; padding:0; font-size:18px; }
+  #qrcode { background:#fff; padding:8px; border-radius:10px; display:inline-block; margin-top:10px; }
+  .steps { display:flex; gap:6px; margin-bottom:14px; font-size:12px; color:#9fc3dd; }
+  .steps b { color:#38bdf8; }
 </style>
 </head>
 <body>
-<button id="themeBtn" class="small">☀️ / 🌙</button>
-<h1>Send<span>Code</span></h1>
-<p class="sub">Transfère dossiers, images, zip, rar… de PC à PC, par simple code — P2P, sans serveur.</p>
+<button id="themeBtn" class="ghost">☀️</button>
+<header>
+  <h1>Send<b>Code</b></h1>
+  <p>Dossiers, images, ZIP, RAR… transférés directement entre 2 PC, sans serveur.</p>
+</header>
 
 <div class="card">
-  <h2>📤 Envoyer</h2>
-  <button id="btnSender">Créer un code</button>
+  <h2>1 · Préparer l'envoi</h2>
+  <div class="steps"><b>➊</b> ini code · <b>➋</b> choisir les fichiers · <b>➌</b> donner le code</div>
+  <button id="btnSender">🚀 Créer un code</button>
   <div id="senderArea" class="hidden">
-    <div id="code"></div>
-    <button id="btnCopy" class="small">📋 Copier le code</button>
-    <button id="btnLink" class="small">🔗 Lien direct</button>
-    <div id="linkBox" class="hidden speed"></div>
+    <div class="code-box" id="code"></div>
+    <div class="row">
+      <button id="btnCopy" class="ghost">📋 Copier</button>
+      <button id="btnLink" class="ghost">🔗 Lien</button>
+      <button id="btnAdd" class="ghost">➕ Fichier/dossier</button>
+    </div>
+    <div id="linkBox" class="hidden"></div>
     <div id="qrcode"></div>
-    <br>
+    <label>Fichiers à envoyer :</label>
     <div id="inputs">
       <input type="file" class="picker" webkitdirectory directory multiple>
       <input type="file" class="picker" multiple>
     </div>
-    <button id="btnAdd" class="small">➕ Ajouter d'autres fichiers</button>
-    <progress id="progSend" value="0" max="100" class="hidden"></progress>
+    <button id="btnSendFiles" disabled>📤 Envoyer les fichiers</button>
+    <progress id="progSend" class="hidden" value="0" max="100"></progress>
     <div id="speedSend" class="speed hidden"></div>
-    <h3>💬 Chat</h3>
-    <div id="chatS" class="log"></div>
-    <input type="text" id="chatSInput" placeholder="message...">
-    <button id="chatSBtn" class="small">Envoyer</button>
   </div>
 </div>
 
 <div class="card">
-  <h2>📥 Recevoir</h2>
-  <input type="text" id="codeInput" placeholder="code reçu">
-  <button id="btnReceiver">Se connecter</button>
-  <button id="btnAuto" class="small hidden">🚀 Connexion auto</button>
+  <h2>2 · Recevoir</h2>
+  <div class="row">
+    <input type="text" id="codeInput" placeholder="Code reçu">
+    <button id="btnReceiver">🔗 Connecter</button>
+    <button id="btnAuto" class="ghost hidden">🚀 Auto</button>
+  </div>
   <div id="files"></div>
   <div id="recvSpeed" class="speed hidden"></div>
-  <div id="ackBox" class="hidden">
-    <input type="text" id="ackInput" placeholder="message pour l'envoyeur">
-    <button id="btnAck" class="small">Envoyer</button>
+</div>
+
+<div class="card">
+  <h2>💬 Discussion</h2>
+  <div class="box" id="chatS"></div>
+  <div class="row">
+    <input type="text" id="chatSInput" placeholder="Message…">
+    <button id="chatSBtn">Envoyer</button>
   </div>
-  <h3>💬 Chat</h3>
-  <div id="chatR" class="log"></div>
-  <input type="text" id="chatRInput" placeholder="message...">
-  <button id="chatRBtn" class="small">Envoyer</button>
+  <div class="box" id="chatR" style="display:none"></div>
+  <div class="row" id="chatRRow" style="display:none">
+    <input type="text" id="chatRInput" placeholder="Message…">
+    <button id="chatRBtn">Envoyer</button>
+  </div>
 </div>
 
 <div class="card">
@@ -87,7 +101,7 @@
   <div id="history"></div>
 </div>
 
-<div id="log"></div>
+<div id="log" class="box"></div>
 
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -96,17 +110,20 @@ const log = m => document.getElementById('log').textContent += m + "\n";
 const rand = () => String(Math.floor(10000 + Math.random() * 90000));
 let sendConn = null;
 
-// Thème clair/sombre
+// --- Chiffrement du chat (AES-GCM, clé dérivée du code) ---
+let chatKey = null;
+async function keyFrom(code) { const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('sendcode:' + code)); return crypto.subtle.importKey('raw', h, 'AES-GCM', false, ['encrypt', 'decrypt']); }
+async function enc(t) { const iv = crypto.getRandomValues(new Uint8Array(12)); const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, chatKey, new TextEncoder().encode(t)); return btoa(String.fromCharCode(...iv)) + ':' + btoa(String.fromCharCode(...new Uint8Array(ct))); }
+async function dec(s) { const [i, c] = s.split(':'); const u = x => new Uint8Array(atob(x).split('').map(ch => ch.charCodeAt(0))); const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: u(i) }, chatKey, u(c)); return new TextDecoder().decode(pt); }
+
 document.getElementById('themeBtn').onclick = () => document.body.classList.toggle('light');
 
-// Historique
 const hist = JSON.parse(localStorage.getItem('sc_history') || '[]');
 const renderHist = () => document.getElementById('history').innerHTML =
   hist.map(h => `<div class="history-item">📄 ${h.name} — ${h.date}</div>`).join('') || '<i>vide</i>';
 renderHist();
 const addHist = n => { hist.unshift({ name: n, date: new Date().toLocaleString() }); localStorage.setItem('sc_history', JSON.stringify(hist.slice(0, 20))); renderHist(); };
 
-// Auto-connexion si ?code= dans l'URL
 const urlCode = new URLSearchParams(location.search).get('code');
 if (urlCode) { document.getElementById('codeInput').value = urlCode; document.getElementById('btnAuto').classList.remove('hidden'); }
 
@@ -116,7 +133,6 @@ document.getElementById('btnAdd').onclick = () => {
   document.getElementById('inputs').appendChild(i);
 };
 
-// ---------- EXPEDITEUR ----------
 document.getElementById('btnSender').onclick = () => {
   const code = rand();
   const peer = new Peer(code);
@@ -124,72 +140,84 @@ document.getElementById('btnSender').onclick = () => {
     const link = location.origin + location.pathname + '?code=' + code;
     document.getElementById('linkBox').innerHTML = '🔗 <a href="' + link + '">' + link + '</a>';
     document.getElementById('linkBox').classList.remove('hidden');
-    new QRCode(document.getElementById('qrcode'), link);
   };
-  peer.on('open', () => {
+  peer.on('open', async () => {
     document.getElementById('senderArea').classList.remove('hidden');
     document.getElementById('code').textContent = code;
     log('🔑 Code prêt : ' + code);
     new QRCode(document.getElementById('qrcode'), code);
+    chatKey = await keyFrom(code);
   });
+  document.getElementById('btnSendFiles').onclick = async () => {
+    if (!sendConn) { log('⚠️ Pas de receveur connecté'); return; }
+    const files = [...document.querySelectorAll('input.picker')].flatMap(i => [...i.files]);
+    if (!files.length) { log('⚠️ Ajoute d\'abord des fichiers'); return; }
+    document.getElementById('btnSendFiles').disabled = true;
+    document.getElementById('progSend').classList.remove('hidden');
+    document.getElementById('speedSend').classList.remove('hidden');
+    const conn = sendConn;
+    const CHUNK = 16 * 1024;
+    const total = files.reduce((s, f) => s + f.size, 0) || 1;
+    let sent = 0, done = 0, t0 = Date.now(), last = 0, lastT = t0;
+    for (const f of files) {
+      conn.send({ type: 'meta', name: f.webkitRelativePath || f.name, size: f.size });
+      for (let off = 0; off < f.size; off += CHUNK) {
+        const buf = await f.slice(off, off + CHUNK).arrayBuffer();
+        conn.send({ type: 'chunk', data: buf });
+        sent += buf.byteLength;
+        document.getElementById('progSend').value = sent / total * 100;
+        const now = Date.now();
+        if (now - lastT > 500) { const v = (sent - last) / ((now - lastT) / 1000); document.getElementById('speedSend').textContent = '⚡ ' + (v / 1048576).toFixed(2) + ' Mo/s'; last = sent; lastT = now; }
+        while (conn.dataChannel && conn.dataChannel.bufferedAmount > 8 * 1024 * 1024) await new Promise(r => setTimeout(r, 100));
+        await new Promise(r => setTimeout(r, 0));
+      }
+      conn.send({ type: 'fileend' });
+      addHist(f.name);
+      log('📄 Envoyé : ' + f.name + ' (' + (++done) + '/' + files.length + ')');
+    }
+    conn.send({ type: 'done' });
+    log('🎉 Terminé en ' + ((Date.now() - t0) / 1000).toFixed(1) + 's !');
+    document.getElementById('btnSendFiles').disabled = false;
+  };
   peer.on('connection', conn => {
     sendConn = conn;
     conn.on('open', () => log('✅ Receveur connecté !'));
-    conn.on('data', msg => {
-      if (msg.type === 'ack') log('💬 Message du receveur : ' + msg.text);
-      if (msg.type === 'chat') document.getElementById('chatS').textContent += '👤 Eux : ' + msg.text + '\n';
-    });
-    let readyDone = false;
     conn.on('data', async msg => {
-      if (msg.type === 'ready' && !readyDone) {
-        readyDone = true;
-        const files = [...document.querySelectorAll('input.picker')].flatMap(i => [...i.files]);
-        if (!files.length) { log('⚠️ Ajoute d\'abord des fichiers/dossiers'); return; }
-        document.getElementById('progSend').classList.remove('hidden');
-        document.getElementById('speedSend').classList.remove('hidden');
-        const CHUNK = 16 * 1024;
-        const total = files.reduce((s, f) => s + f.size, 0) || 1;
-        let sent = 0, done = 0, t0 = Date.now(), last = 0, lastT = t0;
-        for (const f of files) {
-          conn.send({ type: 'meta', name: f.webkitRelativePath || f.name, size: f.size });
-          for (let off = 0; off < f.size; off += CHUNK) {
-            const buf = await f.slice(off, off + CHUNK).arrayBuffer();
-            conn.send({ type: 'chunk', data: buf });
-            sent += buf.byteLength;
-            document.getElementById('progSend').value = sent / total * 100;
-            const now = Date.now();
-            if (now - lastT > 500) { const v = (sent - last) / ((now - lastT) / 1000); document.getElementById('speedSend').textContent = '⚡ ' + (v / 1048576).toFixed(2) + ' Mo/s'; last = sent; lastT = now; }
-            while (conn.dataChannel && conn.dataChannel.bufferedAmount > 8 * 1024 * 1024) await new Promise(r => setTimeout(r, 100));
-            await new Promise(r => setTimeout(r, 0));
-          }
-          conn.send({ type: 'fileend' });
-          addHist(f.name);
-          log('📄 Envoyé : ' + f.name + ' (' + (++done) + '/' + files.length + ')');
-        }
-        conn.send({ type: 'done' });
-        log('🎉 Transfert terminé en ' + ((Date.now() - t0) / 1000).toFixed(1) + 's !');
+      if (msg.type === 'chat') { try { document.getElementById('chatS').textContent += '👤 Eux : ' + await dec(msg.data) + '\n'; } catch { log('⚠️ message illisible'); } }
+      if (msg.type === 'ready') {
+        document.getElementById('btnSendFiles').disabled = false;
+        log('💡 Receveur prêt — appuie sur Envoyer');
       }
     });
   });
   peer.on('error', e => log('❌ Erreur : ' + e.type));
 };
 
-// ---------- RECEVEUR ----------
 const connectRecv = code => {
   const peer = new Peer();
-  let cur = null, recv = 0, t0 = Date.now(), last = 0, lastT = t0;
+  let cur = null, last = 0, lastT = Date.now();
   document.getElementById('recvSpeed').classList.remove('hidden');
-  peer.on('open', () => {
+  document.getElementById('chatR').style.display = 'block';
+  document.getElementById('chatRRow').style.display = 'flex';
+  peer.on('open', async () => {
     const conn = peer.connect(code, { serialization: 'binary' });
     window._conn = conn;
-    conn.on('open', () => { log('🔗 Connecté à ' + code); let n = 0; const iv = setInterval(() => { conn.send({ type: 'ready' }); if (++n > 10) clearInterval(iv); }, 800); conn.send({ type: 'ready' }); t0 = Date.now(); lastT = t0; });
-    conn.on('data', msg => {
-      if (msg.type === 'meta') { cur = { name: msg.name, parts: [] }; log('📥 Réception : ' + msg.name); recv = 0; }
-      if (msg.type === 'chat') document.getElementById('chatR').textContent += '👤 Eux : ' + msg.text + '\n';
+    chatKey = await keyFrom(code);
+    let gotFirst = false;
+    conn.on('open', () => {
+      log('🔗 Connecté à ' + code);
+      const iv = setInterval(() => { if (!gotFirst) conn.send({ type: 'ready' }); else clearInterval(iv); }, 800);
+      conn.send({ type: 'ready' });
+      lastT = Date.now();
+      window._stopReady = () => { gotFirst = true; clearInterval(iv); };
+    });
+    conn.on('data', async msg => {
+      if (msg.type === 'meta') { cur = { name: msg.name, parts: [] }; log('📥 ' + msg.name); last = 0; if (window._stopReady) window._stopReady(); }
       else if (msg.type === 'chunk' && cur) {
-        cur.parts.push(msg.data); recv += msg.data.byteLength;
+        cur.parts.push(msg.data);
         const now = Date.now();
-        if (now - lastT > 500) { const v = (recv - last) / ((now - lastT) / 1000); document.getElementById('recvSpeed').textContent = '⚡ ' + (v / 1048576).toFixed(2) + ' Mo/s'; last = recv; lastT = now; }
+        const got = cur.parts.reduce((s, p) => s + p.byteLength, 0);
+        if (now - lastT > 500) { const v = (got - last) / ((now - lastT) / 1000); document.getElementById('recvSpeed').textContent = '⚡ ' + (v / 1048576).toFixed(2) + ' Mo/s'; last = got; lastT = now; }
       }
       else if (msg.type === 'fileend' && cur) {
         const blob = new Blob(cur.parts);
@@ -202,7 +230,8 @@ const connectRecv = code => {
         log('✅ Reçu : ' + cur.name);
         cur = null;
       }
-      else if (msg.type === 'done') { log('🎉 Tous les fichiers reçus !'); document.getElementById('ackBox').classList.remove('hidden'); }
+      else if (msg.type === 'done') log('🎉 Tous les fichiers reçus !');
+      else if (msg.type === 'chat') { try { document.getElementById('chatR').textContent += '👤 Eux : ' + await dec(msg.data) + '\n'; } catch { log('⚠️ message illisible'); } }
     });
     conn.on('error', e => log('❌ ' + e));
   });
@@ -210,9 +239,8 @@ const connectRecv = code => {
 };
 document.getElementById('btnReceiver').onclick = () => { const c = document.getElementById('codeInput').value.trim(); if (!c) { log('⚠️ Entre le code'); return; } connectRecv(c); };
 document.getElementById('btnAuto').onclick = () => connectRecv(urlCode);
-document.getElementById('btnAck').onclick = () => { const t = document.getElementById('ackInput').value.trim(); if (t && window._conn) window._conn.send({ type: 'ack', text: t }); log('💬 Message envoyé'); };
-document.getElementById('chatSBtn').onclick = () => { const t = document.getElementById('chatSInput').value.trim(); if (t && sendConn) { sendConn.send({ type: 'chat', text: t }); document.getElementById('chatS').textContent += '🧑 Moi : ' + t + '\n'; } document.getElementById('chatSInput').value = ''; };
-document.getElementById('chatRBtn').onclick = () => { const t = document.getElementById('chatRInput').value.trim(); if (t && window._conn) { window._conn.send({ type: 'chat', text: t }); document.getElementById('chatR').textContent += '🧑 Moi : ' + t + '\n'; } document.getElementById('chatRInput').value = ''; };
+document.getElementById('chatSBtn').onclick = () => { const t = document.getElementById('chatSInput').value.trim(); if (t && sendConn) { enc(t).then(e => sendConn.send({ type: 'chat', data: e })); document.getElementById('chatS').textContent += '🧑 Moi : ' + t + '\n'; } document.getElementById('chatSInput').value = ''; };
+document.getElementById('chatRBtn').onclick = () => { const t = document.getElementById('chatRInput').value.trim(); if (t && window._conn) { enc(t).then(e => window._conn.send({ type: 'chat', data: e })); document.getElementById('chatR').textContent += '🧑 Moi : ' + t + '\n'; } document.getElementById('chatRInput').value = ''; };
 </script>
 </body>
 </html>
