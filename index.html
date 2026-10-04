@@ -130,7 +130,7 @@ document.getElementById('themeBtn').onclick = () => document.body.classList.togg
 
 const hist = JSON.parse(localStorage.getItem('sc_history') || '[]');
 const renderHist = () => document.getElementById('history').innerHTML =
-  hist.map((h, i) => `<div class="history-item">📄 ${h.name} — ${h.date} ${h.url ? `<a href="${h.url}" download style="color:#7dd3fc;text-decoration:none">⬇</a>` : ''} <button class="ghost" onclick="delHist(${i})" style="padding:2px 8px;font-size:12px">🗑️</button></div>`).join('') || '<i>vide</i>';
+  hist.map((h, i) => `<div class="history-item">📄 ${h.name} — ${h.date} ${h.url ? `<a class="ghost" href="${h.url}" download style="padding:2px 8px;font-size:12px;text-decoration:none;color:#a5b4fc;border:1px solid #6366f1;border-radius:8px">⬇ Télecharger</a>` : ''} <button class="ghost" onclick="delHist(${i})" style="padding:2px 8px;font-size:12px">🗑️</button></div>`).join('') || '<i>vide</i>';
 renderHist();
 const saveHist = () => localStorage.setItem('sc_history', JSON.stringify(hist.slice(0, 20).map(({ url, ...r }) => r)));
 window.delHist = i => { hist.splice(i, 1); saveHist(); renderHist(); };
