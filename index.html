@@ -134,8 +134,22 @@ document.getElementById('btnAdd').onclick = () => {
 };
 
 document.getElementById('btnSender').onclick = () => {
-  const code = rand();
-  const peer = new Peer(code);
+  if (typeof Peer === 'undefined') { log('❌ Service de connexion indisponible (bloqueur de pub ?)'); return; }
+  createSenderPeer(rand());
+};
+
+function createSenderPeer(code) {
+  let peer;
+  try { peer = new Peer(code); } catch (e) { log('❌ ' + e.message); return; }
+  log('⏳ Connexion au serveur…');
+  peer.on('error', e => {
+    if (e.type === 'unavailable-id') { log('⚠️ Code déjà pris, nouvel essai…'); createSenderPeer(rand()); }
+    else log('❌ ' + e.type + ' : ' + (e.message || ''));
+  });
+  setupPeer(peer, code);
+}
+
+function setupPeer(peer, code) {
   document.getElementById('btnLink').onclick = () => {
     const link = location.origin + location.pathname + '?code=' + code;
     document.getElementById('linkBox').innerHTML = '🔗 <a href="' + link + '">' + link + '</a>';
@@ -190,7 +204,6 @@ document.getElementById('btnSender').onclick = () => {
       }
     });
   });
-  peer.on('error', e => log('❌ Erreur : ' + e.type));
 };
 
 const connectRecv = code => {
