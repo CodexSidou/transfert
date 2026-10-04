@@ -47,6 +47,8 @@
   <p style="margin-top:6px;font-size:13px">📱 Fonctionne depuis un PC ou un téléphone (Chrome, Edge, Safari récents) — PC → PC, PC → téléphone, téléphone → PC.</p>
 </header>
 
+<div id="statusConn" class="box" style="text-align:center;max-width:300px;margin-bottom:18px">🔴 Hors ligne</div>
+
 <div class="card">
   <h2>1 · Envoyer</h2>
   <button id="btnSender">✨ Créer un code</button>
@@ -112,6 +114,16 @@ async function enc(t) { const iv = crypto.getRandomValues(new Uint8Array(12)); c
 async function dec(s) { const [i, c] = s.split(':'); const u = x => new Uint8Array(atob(x).split('').map(ch => ch.charCodeAt(0))); const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: u(i) }, chatKey, u(c)); return new TextDecoder().decode(pt); }
 const chatBox = document.getElementById('chat');
 const say = (who, t) => chatBox.textContent += who + ' : ' + t + '\n';
+const setStatus = t => document.getElementById('statusConn').textContent = t;
+function startPing(conn) {
+  const send = () => { try { conn.send({ type: 'ping', t: Date.now() }); } catch {} };
+  send(); const iv = setInterval(send, 3000);
+  conn.on('data', msg => {
+    if (msg.type === 'ping') conn.send({ type: 'pong', t: msg.t });
+    else if (msg.type === 'pong') setStatus('🟢 Connecté — réactivité ' + (Date.now() - msg.t) + ' ms');
+  });
+  conn.on('close', () => { clearInterval(iv); setStatus('🔴 Hors ligne'); });
+}
 
 document.getElementById('themeBtn').onclick = () => document.body.classList.toggle('light');
 
@@ -175,6 +187,7 @@ function setupPeer(peer, code) {
   peer.on('open', async () => {
     document.getElementById('code').textContent = code;
     log('🔑 Code prêt : ' + code);
+    setStatus('🟡 Code prêt — en attente du receveur');
     document.getElementById('qrcode').innerHTML = '';
     new QRCode(document.getElementById('qrcode'), code);
     chatKey = await keyFrom(code);
@@ -212,7 +225,7 @@ function setupPeer(peer, code) {
   };
   peer.on('connection', conn => {
     sendConn = conn;
-    conn.on('open', () => log('✅ Receveur connecté !'));
+    conn.on('open', () => { setStatus('🟡 Receveur connecté…'); log('✅ Receveur connecté !'); startPing(conn); });
     conn.on('data', async msg => {
       if (msg.type === 'chat') { try { say('👤 Eux', await dec(msg.data)); } catch { log('⚠️ message illisible'); } }
       if (msg.type === 'ready') { document.getElementById('btnSendFiles').disabled = false; log('💡 Receveur prêt — appuie sur Envoyer'); }
@@ -230,7 +243,9 @@ function connectRecv(code) {
     chatKey = await keyFrom(code);
     let gotFirst = false;
     conn.on('open', () => {
+      setStatus('🟡 En connexion…');
       log('🔗 Connecté à ' + code);
+      startPing(conn);
       const iv = setInterval(() => { gotFirst ? clearInterval(iv) : conn.send({ type: 'ready' }); }, 800);
       conn.send({ type: 'ready' });
       lastT = Date.now();
