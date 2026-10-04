@@ -4,7 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SendCode — Transfert par code</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#6366f1">
+<link rel="apple-touch-icon" href="icon.svg">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
 <style>
   * { box-sizing: border-box; margin:0; padding:0; font-family: 'Segoe UI', system-ui, sans-serif; transition: box-shadow .2s; }
   body { min-height:100vh; background: radial-gradient(1200px 600px at 80% -10%, #312e81 0%, #0f172a 45%, #020617 100%); color:#e2e8f0; padding:32px 16px 60px; display:flex; flex-direction:column; align-items:center; }
@@ -56,6 +60,9 @@
   <div id="senderArea" class="hidden">
     <div class="code-box" id="code"></div>
     <div class="row">
+      <input type="password" id="passInput" placeholder="Mot de passe (optionnel)" style="max-width:200px">
+    </div>
+    <div class="row">
       <button id="btnCopy" class="ghost">📋 Copier</button>
       <button id="btnLink" class="ghost">🔗 Lien</button>
       <button id="btnAdd" class="ghost">➕ Fichier</button>
@@ -81,6 +88,7 @@
   <div class="row">
     <input type="text" id="codeInput" placeholder="Code reçu">
     <button id="btnReceiver">🔗 Connecter</button>
+    <input type="password" id="passRecv" placeholder="Mot de passe" style="max-width:140px">
   </div>
   <div id="files"></div>
   <div id="recvSpeed" class="speed hidden"></div>
@@ -113,7 +121,7 @@ let sendConn = null, recvConn = null;
 
 // --- Chiffrement AES-GCM du chat (clé dérivée du code) ---
 let chatKey = null;
-async function keyFrom(code) { const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('sendcode:' + code)); return crypto.subtle.importKey('raw', h, 'AES-GCM', false, ['encrypt', 'decrypt']); }
+async function keyFrom(code, pass) { const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('sendcode:' + code + ':' + (pass || ''))); return crypto.subtle.importKey('raw', h, 'AES-GCM', false, ['encrypt', 'decrypt']); }
 async function enc(t) { const iv = crypto.getRandomValues(new Uint8Array(12)); const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, chatKey, new TextEncoder().encode(t)); return btoa(String.fromCharCode(...iv)) + ':' + btoa(String.fromCharCode(...new Uint8Array(ct))); }
 async function dec(s) { const [i, c] = s.split(':'); const u = x => new Uint8Array(atob(x).split('').map(ch => ch.charCodeAt(0))); const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: u(i) }, chatKey, u(c)); return new TextDecoder().decode(pt); }
 const chatBox = document.getElementById('chat');
@@ -209,7 +217,7 @@ function setupPeer(peer, code) {
     setStatus('🟡 Code prêt — en attente du receveur');
     document.getElementById('qrcode').innerHTML = '';
     new QRCode(document.getElementById('qrcode'), code);
-    chatKey = await keyFrom(code);
+    chatKey = await keyFrom(code, document.getElementById('passInput').value);
   });
   document.getElementById('btnSendFiles').onclick = async () => {
     if (!sendConn) { log('⚠️ Pas de receveur connecté'); return; }
@@ -247,7 +255,12 @@ function setupPeer(peer, code) {
     conn.on('open', () => { setStatus('🟡 Receveur connecté…'); log('✅ Receveur connecté !'); startPing(conn); });
     conn.on('data', async msg => {
       if (msg.type === 'chat') { try { say('👤 Eux', await dec(msg.data)); } catch { log('⚠️ message illisible'); } }
-      if (msg.type === 'ready') { document.getElementById('btnSendFiles').disabled = false; log('💡 Receveur prêt — appuie sur Envoyer'); }
+      if (msg.type === 'ready') {
+        const expected = document.getElementById('passInput').value || '';
+        if (expected && msg.pass !== expected) { log('🔒 Mot de passe incorrect — accès refusé'); return; }
+        document.getElementById('btnSendFiles').disabled = false; log('💡 Receveur prêt — appuie sur Envoyer');
+      }
+      if (msg.type === 'complete') log('📩 Le destinataire a tout reçu ✅');
     });
   });
 }
@@ -259,14 +272,14 @@ function connectRecv(code) {
   peer.on('open', async () => {
     const conn = peer.connect(code, { serialization: 'binary' });
     recvConn = conn;
-    chatKey = await keyFrom(code);
+    chatKey = await keyFrom(code, document.getElementById('passRecv').value);
     let gotFirst = false;
     conn.on('open', () => {
       setStatus('🟡 En connexion…');
       log('🔗 Connecté à ' + code);
       startPing(conn);
-      const iv = setInterval(() => { gotFirst ? clearInterval(iv) : conn.send({ type: 'ready' }); }, 800);
-      conn.send({ type: 'ready' });
+      const iv = setInterval(() => { gotFirst ? clearInterval(iv) : conn.send({ type: 'ready', pass: document.getElementById('passRecv').value || '' }); }, 800);
+      conn.send({ type: 'ready', pass: document.getElementById('passRecv').value || '' });
       lastT = Date.now();
       window._stopReady = () => { gotFirst = true; clearInterval(iv); };
     });
@@ -290,7 +303,7 @@ function connectRecv(code) {
         log('✅ Reçu : ' + cur.name + (blob.type.startsWith('image/') ? '' : ' — ouvre ensuite dans Fichiers pour installer'));
         cur = null;
       }
-      else if (msg.type === 'done') log('🎉 Tous les fichiers reçus !');
+      else if (msg.type === 'done') { log('🎉 Tous les fichiers reçus !'); try { conn.send({ type: 'complete' }); } catch {} }
       else if (msg.type === 'chat') { try { say('👤 Eux', await dec(msg.data)); } catch { log('⚠️ message illisible'); } }
     });
     conn.on('error', e => log('❌ ' + e));

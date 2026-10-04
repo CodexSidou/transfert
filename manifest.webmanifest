@@ -1,0 +1,13 @@
+{
+  "name": "SendCode — Transfert par code",
+  "short_name": "SendCode",
+  "description": "Transférer des fichiers de PC à PC / téléphone par un simple code.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#6366f1",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
