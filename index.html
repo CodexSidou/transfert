@@ -24,6 +24,8 @@
   #code { font-size:32px; letter-spacing:8px; font-family:Consolas,monospace; color:#38bdf8; background:#0b1a2c; border:1px dashed #38bdf8; padding:12px 22px; border-radius:12px; display:inline-block; margin:12px 0; }
   body.light #code { background:#f1f5f9; }
   #log { background:#0b1a2c; border-radius:10px; padding:14px; min-height:70px; white-space:pre-wrap; font-size:13px; color:#a5d8ff; margin-top:22px; max-width:620px; width:100%; }
+  .log { background:#0b1a2c; border-radius:10px; padding:10px; min-height:50px; max-height:160px; overflow-y:auto; white-space:pre-wrap; font-size:13px; color:#a5d8ff; margin:10px 0; }
+  body.light .log { background:#f1f5f9; color:#334155; }
   body.light #log { background:#f1f5f9; color:#334155; }
   progress { width:100%; height:14px; border-radius:8px; margin-top:10px; }
   #files a, .history-item { display:block; color:#7dd3fc; text-decoration:none; padding:8px 10px; background:#0b1a2c; border-radius:8px; margin-top:6px; }
@@ -56,6 +58,10 @@
     <button id="btnAdd" class="small">➕ Ajouter d'autres fichiers</button>
     <progress id="progSend" value="0" max="100" class="hidden"></progress>
     <div id="speedSend" class="speed hidden"></div>
+    <h3>💬 Chat</h3>
+    <div id="chatS" class="log"></div>
+    <input type="text" id="chatSInput" placeholder="message...">
+    <button id="chatSBtn" class="small">Envoyer</button>
   </div>
 </div>
 
@@ -70,6 +76,10 @@
     <input type="text" id="ackInput" placeholder="message pour l'envoyeur">
     <button id="btnAck" class="small">Envoyer</button>
   </div>
+  <h3>💬 Chat</h3>
+  <div id="chatR" class="log"></div>
+  <input type="text" id="chatRInput" placeholder="message...">
+  <button id="chatRBtn" class="small">Envoyer</button>
 </div>
 
 <div class="card">
@@ -125,9 +135,14 @@ document.getElementById('btnSender').onclick = () => {
   peer.on('connection', conn => {
     sendConn = conn;
     conn.on('open', () => log('✅ Receveur connecté !'));
-    conn.on('data', msg => { if (msg.type === 'ack') log('💬 Message du receveur : ' + msg.text); });
+    conn.on('data', msg => {
+      if (msg.type === 'ack') log('💬 Message du receveur : ' + msg.text);
+      if (msg.type === 'chat') document.getElementById('chatS').textContent += '👤 Eux : ' + msg.text + '\n';
+    });
+    let readyDone = false;
     conn.on('data', async msg => {
-      if (msg.type === 'ready') {
+      if (msg.type === 'ready' && !readyDone) {
+        readyDone = true;
         const files = [...document.querySelectorAll('input.picker')].flatMap(i => [...i.files]);
         if (!files.length) { log('⚠️ Ajoute d\'abord des fichiers/dossiers'); return; }
         document.getElementById('progSend').classList.remove('hidden');
@@ -167,9 +182,10 @@ const connectRecv = code => {
   peer.on('open', () => {
     const conn = peer.connect(code, { serialization: 'binary' });
     window._conn = conn;
-    conn.on('open', () => { log('🔗 Connecté à ' + code); conn.send({ type: 'ready' }); t0 = Date.now(); lastT = t0; });
+    conn.on('open', () => { log('🔗 Connecté à ' + code); let n = 0; const iv = setInterval(() => { conn.send({ type: 'ready' }); if (++n > 10) clearInterval(iv); }, 800); conn.send({ type: 'ready' }); t0 = Date.now(); lastT = t0; });
     conn.on('data', msg => {
       if (msg.type === 'meta') { cur = { name: msg.name, parts: [] }; log('📥 Réception : ' + msg.name); recv = 0; }
+      if (msg.type === 'chat') document.getElementById('chatR').textContent += '👤 Eux : ' + msg.text + '\n';
       else if (msg.type === 'chunk' && cur) {
         cur.parts.push(msg.data); recv += msg.data.byteLength;
         const now = Date.now();
@@ -195,6 +211,8 @@ const connectRecv = code => {
 document.getElementById('btnReceiver').onclick = () => { const c = document.getElementById('codeInput').value.trim(); if (!c) { log('⚠️ Entre le code'); return; } connectRecv(c); };
 document.getElementById('btnAuto').onclick = () => connectRecv(urlCode);
 document.getElementById('btnAck').onclick = () => { const t = document.getElementById('ackInput').value.trim(); if (t && window._conn) window._conn.send({ type: 'ack', text: t }); log('💬 Message envoyé'); };
+document.getElementById('chatSBtn').onclick = () => { const t = document.getElementById('chatSInput').value.trim(); if (t && sendConn) { sendConn.send({ type: 'chat', text: t }); document.getElementById('chatS').textContent += '🧑 Moi : ' + t + '\n'; } document.getElementById('chatSInput').value = ''; };
+document.getElementById('chatRBtn').onclick = () => { const t = document.getElementById('chatRInput').value.trim(); if (t && window._conn) { window._conn.send({ type: 'chat', text: t }); document.getElementById('chatR').textContent += '🧑 Moi : ' + t + '\n'; } document.getElementById('chatRInput').value = ''; };
 </script>
 </body>
 </html>
