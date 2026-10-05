@@ -22,9 +22,14 @@
   #sidebar { position:fixed; top:70px; left:0; bottom:0; width:64px; background:rgba(15,23,42,.85); display:flex; flex-direction:column; align-items:center; gap:12px; padding-top:14px; z-index:9; border-inline-end:1px solid rgba(148,163,184,.15); }
   #sidebar a { display:flex; flex-direction:column; align-items:center; text-decoration:none; color:#a5b4fc; font-size:11px; gap:4px; margin-top:8px; }
   #sidebar a span { font-size:22px; }
+  #sidebar { transition: transform .3s ease; }
+  @media (max-width: 700px) { #sidebar { transform: translateX(-110%); } #sidebar.open { transform: translateX(0); } }
+  #menuBtn { border-radius:50%; width:42px; height:42px; padding:0; font-size:20px; position:fixed; top:18px; left:18px; z-index:20; display:none; }
+  @media (max-width: 700px) { #menuBtn { display:block; } }
 </style>
 </head>
 <body>
+<button id="menuBtn" class="ghost" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
 <div id="sidebar">
   <a href="index.html"><span>📤</span>إرسال</a>
   <a href="recevoir.html"><span>📥</span>استقبال</a>
@@ -123,3 +128,4 @@ document.getElementById('chatBtn').onclick = async () => {
 </script>
 </body>
 </html>
+
