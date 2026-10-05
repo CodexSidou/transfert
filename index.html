@@ -117,16 +117,6 @@
 </div>
 
 <div class="card">
-  <h2 data-ar="💬 محادثة مشفّرة" data-fr="💬 Discussion chiffrée">💬 محادثة مشفّرة</h2>
-  <div class="box" id="chat"></div>
-  <div class="row">
-    <input type="text" id="chatInput" data-ar="رسالة…" data-fr="Message…" placeholder="رسالة…">
-    <button id="chatBtn" data-ar="إرسال" data-fr="Envoyer">إرسال</button>
-  </div>
-  <p class="note" data-ar="🔒 لا يُحفظ أي رسالة: تختفي المحادثة عند إعادة تحميل الصفحة." data-fr="🔒 Aucun message n'est sauvegardé : le chat disparaît au rechargement.">🔒 لا يُحفظ أي رسالة: تختفي المحادثة عند إعادة تحميل الصفحة.</p>
-</div>
-
-<div class="card">
   <h2 data-ar="🕓 السجل" data-fr="🕓 Historique">🕓 السجل</h2>
   <button id="btnClearHist" class="ghost" data-ar="🗑️ مسح السجل" data-fr="🗑️ Vider l'historique">🗑️ مسح السجل</button>
   <div id="history"></div>
@@ -145,13 +135,7 @@ const t = (ar, fr) => LANG === 'ar' ? ar : fr;
 const log = m => document.getElementById('log').textContent += m + "\n";
 const rand = () => String(Math.floor(10000 + Math.random() * 90000));
 let sendConn = null, recvConn = null;
-let chatKey = null;
 
-async function keyFrom(code, pass) { const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('sendcode:' + code + ':' + (pass || ''))); return crypto.subtle.importKey('raw', h, 'AES-GCM', false, ['encrypt', 'decrypt']); }
-async function enc(t) { const iv = crypto.getRandomValues(new Uint8Array(12)); const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, chatKey, new TextEncoder().encode(t)); return btoa(String.fromCharCode(...iv)) + ':' + btoa(String.fromCharCode(...new Uint8Array(ct))); }
-async function dec(s) { const [i, c] = s.split(':'); const u = x => new Uint8Array(atob(x).split('').map(ch => ch.charCodeAt(0))); const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: u(i) }, chatKey, u(c)); return new TextDecoder().decode(pt); }
-const chatBox = document.getElementById('chat');
-const say = (who, t) => chatBox.textContent += who + ' : ' + t + '\n';
 const setStatus = t => document.getElementById('statusConn').textContent = t;
 function startPing(conn) {
   const send = () => { try { conn.send({ type: 'ping', t: Date.now() }); } catch {} };
@@ -266,7 +250,6 @@ function setupPeer(peer, code) {
     setStatus('🟡 ' + t('الرمز جاهز — في انتظار المستقبِل', 'Code prêt — en attente du receveur'));
     document.getElementById('qrcode').innerHTML = '';
     new QRCode(document.getElementById('qrcode'), code);
-    chatKey = await keyFrom(code, document.getElementById('passInput').value);
   });
   document.getElementById('btnSendFiles').onclick = async () => {
     if (!sendConn) { log('⚠️ ' + t('لا يوجد مستقبِل متصل', 'Pas de receveur connecté')); return; }
@@ -303,7 +286,6 @@ function setupPeer(peer, code) {
     sendConn = conn;
     conn.on('open', () => { setStatus('🟡 ' + t('مستقبِل متصل…', 'Receveur connecté…')); log('✅ ' + t('المستقبِل متصل!', 'Receveur connecté !')); startPing(conn); });
     conn.on('data', async msg => {
-      if (msg.type === 'chat') { try { say('👤 ' + t('هم', 'Eux'), await dec(msg.data)); } catch { log('⚠️ ' + t('رسالة غير مقروءة', 'message illisible')); } }
       if (msg.type === 'ready') {
         const expected = document.getElementById('passInput').value || '';
         if (expected && msg.pass !== expected) { log('🔒 ' + t('كلمة المرور غير صحيحة — تم رفض الوصول', 'Mot de passe incorrect — accès refusé')); return; }
@@ -321,7 +303,6 @@ function connectRecv(code) {
   peer.on('open', async () => {
     const conn = peer.connect(code, { serialization: 'binary' });
     recvConn = conn;
-    chatKey = await keyFrom(code, document.getElementById('passRecv').value);
     let gotFirst = false;
     conn.on('open', () => {
       setStatus('🟡 ' + t('جارٍ الاتصال…', 'En connexion…'));
@@ -353,20 +334,12 @@ function connectRecv(code) {
         cur = null;
       }
       else if (msg.type === 'done') { log('🎉 ' + t('وصلت جميع الملفات!', 'Tous les fichiers reçus !')); try { conn.send({ type: 'complete' }); } catch {} }
-      else if (msg.type === 'chat') { try { say('👤 ' + t('هم', 'Eux'), await dec(msg.data)); } catch { log('⚠️ ' + t('رسالة غير مقروءة', 'message illisible')); } }
     });
     conn.on('error', e => log('❌ ' + e));
   });
   peer.on('error', e => log('❌ ' + e.type + ' (' + t('رمز غير صالح؟', 'code inconnu ?') + ')'));
 }
 document.getElementById('btnReceiver').onclick = () => { const c = document.getElementById('codeInput').value.trim(); if (!c) { log('⚠️ ' + t('أدخل الرمز', 'Entre le code')); return; } connectRecv(c); };
-document.getElementById('chatBtn').onclick = async () => {
-  const txt = document.getElementById('chatInput').value.trim();
-  const conn = sendConn || recvConn;
-  if (txt && conn && chatKey) { conn.send({ type: 'chat', data: await enc(txt) }); say('🧑 ' + t('أنا', 'Moi'), txt); }
-  else if (txt && !conn) log('⚠️ ' + t('لست متصلاً بعد', 'Pas encore connecté'));
-  document.getElementById('chatInput').value = '';
-};
 </script>
 </body>
 </html>

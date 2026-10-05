@@ -1,4 +1,4 @@
-const CACHE = 'sendcode-v8';
+const CACHE = 'sendcode-v9';
 const ASSETS = ['.', 'index.html', 'recevoir.html', 'discuter.html', 'manifest.webmanifest', 'icon.svg'];
 self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS))));
 self.addEventListener('fetch', e => {
