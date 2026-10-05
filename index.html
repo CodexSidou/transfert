@@ -44,40 +44,45 @@
   body.light #files a, body.light .history-item { background:#f1f5f9; color:#6d28d9; }
   .row { display:flex; gap:8px; align-items:center; margin-top:8px; flex-wrap:wrap; }
   .hidden { display:none; }
-  #floatingBtns { position:fixed; top:18px; right:18px; display:flex; gap:6px; z-index:10; }
-  #floatingBtns button { border-radius:50%; width:42px; height:42px; padding:0; font-size:16px; }
-  #sidebar { position:fixed; top:70px; left:0; bottom:0; width:64px; background:rgba(15,23,42,.85); backdrop-filter:blur(8px); display:flex; flex-direction:column; align-items:center; gap:12px; padding-top:14px; z-index:9; border-inline-end:1px solid rgba(148,163,184,.15); }
-  #sidebar a { display:flex; flex-direction:column; align-items:center; text-decoration:none; color:#a5b4fc; font-size:11px; gap:4px; margin-top:8px; }
-  #sidebar a span { font-size:22px; }
-  #sidebar { transition: transform .3s ease; }
-  @media (max-width: 700px) {
-    #sidebar { transform: translateX(-110%); }
-    #sidebar.open { transform: translateX(0); }
-    main, body { padding-left: 10px; }
+  #navbar { position:sticky; top:0; left:0; right:0; z-index:10; width:100%; background:rgba(15,23,42,.92); backdrop-filter:blur(10px); border-bottom:1px solid rgba(148,163,184,.2); display:flex; align-items:center; justify-content:space-between; padding:10px 18px; margin:-32px -16px 24px; }
+  #navbar .logo { color:#e2e8f0; font-weight:800; font-size:18px; }
+  #navbar .logo b { color:#a5b4fc; }
+  #navbar .tabs { display:flex; gap:6px; }
+  #navbar .tabs a { text-decoration:none; color:#a5b4fc; padding:8px 14px; border-radius:10px; font-weight:700; font-size:14px; }
+  #navbar .tabs a.active { background:linear-gradient(135deg,#818cf8,#a78bfa); color:#0f172a; }
+  #navbar .actions button { width:36px; height:36px; border-radius:50%; padding:0; margin-inline-start:4px; }
+  #menuBtn { display:none; }
+  @media (max-width:700px) {
+    #menuBtn { display:flex !important; width:36px; height:36px; border-radius:50%; align-items:center; justify-content:center; }
+    #navbar .tabs { display:none; position:absolute; top:56px; inset-inline:0; flex-direction:column; background:rgba(15,23,42,.98); padding:10px; gap:4px; border-bottom:1px solid rgba(148,163,184,.2); transform:translateY(-12px); opacity:0; transition:transform .25s ease, opacity .25s ease; }
+    #navbar .tabs.open { display:flex; transform:translateY(0); opacity:1; }
+    #navbar .tabs a { padding:12px; text-align:center; border-radius:10px; }
+    #navbar .tabs a span { display:inline !important; }
+    #navbar { padding:8px 12px; }
   }
-  #menuBtn { border-radius:50%; width:42px; height:42px; padding:0; font-size:20px; position:fixed; top:18px; left:18px; z-index:20; display:none; }
-  @media (max-width: 700px) { #menuBtn { display:block; } #floatingBtns { left:auto; right:12px; top:12px; } }
   #qrcode { background:#fff; padding:10px; border-radius:12px; display:inline-block; margin-top:12px; direction:ltr; }
   .note { font-size:12px; color:#94a3b8; margin-top:10px; }
   .thumb { width:64px; height:64px; object-fit:cover; border-radius:8px; vertical-align:middle; margin-inline-end:8px; }
 </style>
 </head>
 <body>
-<button id="menuBtn" class="ghost" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
-<div id="floatingBtns">
-  <button id="themeBtn" class="ghost">🌓</button>
-  <button id="langBtn" class="ghost">FR</button>
+<div id="navbar">
+  <div class="logo">📦 Send<b>Code</b></div>
+  <div class="tabs" id="navTabs">
+    <a href="index.html" class="active">📤 <span>إرسال</span></a>
+    <a href="recevoir.html">📥 <span>استقبال</span></a>
+    <a href="discuter.html">💬 <span>دردشة</span></a>
+  </div>
+  <div class="actions">
+    <button id="menuBtn" class="ghost" onclick="document.getElementById('navTabs').classList.toggle('open')">☰</button>
+    <button id="langBtn" class="ghost">FR</button>
+    <button id="themeBtn" class="ghost">🌓</button>
+  </div>
 </div>
 <header>
   <h1>Send<b>Code</b></h1>
   <p data-ar="مجلدات وصور وملفات ZIP وRAR… بين جهازين مباشرة — بدون خادم وبدون أثر." data-fr="Dossiers, images, ZIP, RAR… entre 2 appareils directement — sans serveur, sans trace.">مجلدات وصور وملفات ZIP وRAR… بين جهازين مباشرة — بدون خادم وبدون أثر.</p>
   <p style="margin-top:6px;font-size:13px" data-ar="📱 يعمل من الكمبيوتر أو الهاتف (أحدث الإصدارات Chrome وEdge وSafari) — حاسوب ↔ حاسوب، حاسوب ↔ هاتف، هاتف ↔ حاسوب." data-fr="📱 Fonctionne depuis PC ou téléphone (Chrome, Edge, Safari récents) — PC ↔ PC, PC ↔ téléphone, téléphone ↔ PC.">📱 يعمل من الكمبيوتر أو الهاتف (أحدث الإصدارات Chrome وEdge وSafari) — حاسوب ↔ حاسوب، حاسوب ↔ هاتف، هاتف ↔ حاسوب.</p>
-<nav style="margin-top:10px"><a href="recevoir.html" style="color:#a5b4fc;text-decoration:none;margin:0 8px">📥 استقبال</a> · <a href="discuter.html" style="color:#a5b4fc;text-decoration:none;margin:0 8px">💬 دردشة</a></nav>
-<div id="sidebar">
-  <a href="index.html"><span>📤</span>إرسال</a>
-  <a href="recevoir.html"><span>📥</span>استقبال</a>
-  <a href="discuter.html"><span>💬</span>دردشة</a>
-</div>
 </header>
 
 <div id="statusConn" class="box" style="text-align:center;max-width:300px;margin-bottom:18px" data-ar="🔴 غير متصل" data-fr="🔴 Hors ligne">🔴 غير متصل</div>
