@@ -33,7 +33,12 @@
   body.light .code-box { background:#f8fafc; color:#6366f1; }
   progress { width:100%; height:12px; border-radius:6px; margin-top:12px; accent-color:#8b5cf6; }
   .speed { font-family:Consolas,monospace; color:#c4b5fd; margin-top:8px; font-size:14px; direction:ltr; }
-  .box { background:rgba(0,0,0,.3); border-radius:12px; padding:12px 14px; min-height:56px; max-height:170px; overflow-y:auto; font-size:13px; white-space:pre-wrap; margin:10px 0; color:#c7d2fe; }
+  .box { background:rgba(0,0,0,.3); border-radius:12px; padding:12px 14px; min-height:56px; max-height:170px; overflow-y:auto; font-size:13px; white-space:pre-wrap; margin:10px 0; color:#c7d2fe; scrollbar-width:thin; scrollbar-color:#818cf8 rgba(0,0,0,.2); }
+  .box::-webkit-scrollbar, #history::-webkit-scrollbar, #pickedList::-webkit-scrollbar { width:8px; }
+  .box::-webkit-scrollbar-thumb, #history::-webkit-scrollbar-thumb, #pickedList::-webkit-scrollbar-thumb { background:#6366f1; border-radius:8px; }
+  .box::-webkit-scrollbar-track, #history::-webkit-scrollbar-track, #pickedList::-webkit-scrollbar-track { background:rgba(0,0,0,.2); border-radius:8px; }
+  #history { max-height:220px; overflow-y:auto; scrollbar-width:thin; scrollbar-color:#818cf8 transparent; margin-top:10px; }
+  #pickedList { max-height:160px; overflow-y:auto; scrollbar-width:thin; scrollbar-color:#818cf8 transparent; margin-top:10px; }
   body.light .box { background:#f1f5f9; color:#334155; }
   #files a, .history-item { display:block; color:#c4b5fd; background:rgba(0,0,0,.3); padding:9px 12px; border-radius:9px; margin-top:6px; text-decoration:none; }
   body.light #files a, body.light .history-item { background:#f1f5f9; color:#6d28d9; }
@@ -119,7 +124,10 @@
   <div id="history"></div>
 </div>
 
-<div id="log" class="box"></div>
+<div class="card">
+  <h2 data-ar="📋 السجل التقني" data-fr="📋 Journal technique">📋 السجل التقني</h2>
+  <div id="log" class="box" style="max-height:220px;min-height:90px"></div>
+</div>
 
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
