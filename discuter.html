@@ -4,140 +4,117 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SendCode — دردشة</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#6366f1">
+<link rel="apple-touch-icon" href="icon.svg">
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
 <style>
-  * { box-sizing: border-box; margin:0; padding:0; font-family: 'Segoe UI', Tahoma, system-ui, sans-serif; }
-  body { min-height:100vh; background: radial-gradient(1200px 600px at 80% -10%, #312e81 0%, #0f172a 45%, #020617 100%); color:#e2e8f0; padding:32px 16px 60px; display:flex; flex-direction:column; align-items:center; }
-  header { text-align:center; margin-bottom:20px; }
-  header h1 { font-size:34px; font-weight:800; color:#a5b4fc; }
-  header p { color:#94a3b8; margin-top:6px; }
-  .card { background: rgba(30,41,59,.6); border:1px solid rgba(148,163,184,.2); border-radius:20px; padding:26px; width:100%; max-width:640px; margin-bottom:18px; }
-  button { background: linear-gradient(135deg,#818cf8,#a78bfa); color:#0f172a; font-weight:800; border:none; padding:11px 20px; border-radius:11px; cursor:pointer; font-size:14px; margin:4px 2px; }
-  button.ghost { background:transparent; color:#a5b4fc; border:1px solid #6366f1; }
-  input[type=text], input[type=password] { padding:11px 14px; border-radius:11px; border:1px solid #4f46e5; background:rgba(0,0,0,.3); color:#fff; font-size:16px; }
-  .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-  .box { background:rgba(0,0,0,.3); border-radius:12px; padding:12px 14px; min-height:120px; max-height:320px; overflow-y:auto; font-size:13px; white-space:pre-wrap; margin:10px 0; color:#c7d2fe; scrollbar-width:thin; scrollbar-color:#818cf8 rgba(0,0,0,.2); }
-  #chat img { max-width:100%; max-height:240px; border-radius:10px; margin-top:4px; }
-  #code { font-size:36px; letter-spacing:8px; font-family:Consolas,monospace; color:#a5b4fc; border:2px dashed #818cf8; border-radius:14px; padding:10px 20px; display:inline-block; margin:10px 0; direction:ltr; }
-  #navbar { position:sticky; top:0; z-index:10; width:100%; align-self:stretch; background:rgba(15,23,42,.92); backdrop-filter:blur(10px); border-bottom:1px solid rgba(148,163,184,.2); display:flex; align-items:center; justify-content:space-between; padding:10px 18px; margin:-32px -16px 24px; }
-  #navbar .logo { color:#e2e8f0; font-weight:800; font-size:18px; }
-  #navbar .logo b { color:#a5b4fc; }
-  #navbar .tabs { display:flex; gap:6px; }
-  #navbar .tabs a { text-decoration:none; color:#a5b4fc; padding:8px 14px; border-radius:10px; font-weight:700; font-size:14px; }
-  #navbar .tabs a.active { background:linear-gradient(135deg,#818cf8,#a78bfa); color:#0f172a; }
-  #menuBtn { display:none; }
-  @media (max-width:700px) {
-    #menuBtn { display:flex !important; width:36px; height:36px; border-radius:50%; align-items:center; justify-content:center; }
-    #navbar .tabs { position:fixed; top:56px; left:0; right:0; max-height:0; overflow:hidden; flex-direction:column; background:rgba(15,23,42,.98); padding:0 10px; gap:0; transition:max-height .3s ease, padding .3s ease; display:flex; border-bottom:0; z-index:99; }
-    #navbar .tabs.open { max-height:320px; padding:10px; gap:4px; border-bottom:1px solid rgba(148,163,184,.2); }
-    #navbar .tabs a { padding:12px; text-align:center; border-radius:10px; display:block; }
-    #navbar { padding:8px 12px; margin:-16px -10px 20px !important; }
-    body { padding:16px 10px 50px !important; }
-    .card { padding:18px; }
-    button { padding:13px 18px; font-size:15px; }
-    #code { font-size:28px; letter-spacing:5px; }
-  }
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Tahoma,system-ui,sans-serif;transition:box-shadow .2s}
+body{min-height:100vh;background:radial-gradient(1200px 600px at 80% -10%,#312e81 0%,#0f172a 45%,#020617 100%);color:#e2e8f0;padding:0 16px 60px;display:flex;flex-direction:column;align-items:center}
+body.light{background:radial-gradient(1200px 600px at 80% -10%,#c7d2fe 0%,#eef2ff 50%,#fff 100%);color:#1e293b}
+#navbar{position:sticky;top:0;z-index:10;width:100%;background:rgba(15,23,42,.92);backdrop-filter:blur(10px);border-bottom:1px solid rgba(148,163,184,.2);display:flex;align-items:center;justify-content:space-between;padding:12px 18px;margin:0 -16px 24px}
+#navbar .logo{color:#e2e8f0;font-weight:800;font-size:18px}
+#navbar .logo b{color:#a5b4fc}
+#navbar .tabs{display:flex;gap:6px}
+#navbar .tabs a{text-decoration:none;color:#a5b4fc;padding:8px 14px;border-radius:10px;font-weight:700;font-size:14px}
+#navbar .tabs a.active{background:linear-gradient(135deg,#818cf8,#a78bfa);color:#0f172a}
+#navbar .actions button{width:36px;height:36px;border-radius:50%;padding:0;margin-inline-start:4px}
+#menuBtn{display:none}
+@media (max-width:700px){
+  #menuBtn{display:flex !important;width:36px;height:36px;border-radius:50%;align-items:center;justify-content:center}
+  #navbar .tabs{position:fixed;top:58px;left:0;right:0;max-height:0;overflow:hidden;flex-direction:column;background:rgba(15,23,42,.98);padding:0 10px;gap:0;transition:max-height .3s ease,padding .3s ease;display:flex;border-bottom:0;z-index:99}
+  #navbar .tabs.open{max-height:320px;padding:10px;gap:4px;border-bottom:1px solid rgba(148,163,184,.2)}
+  #navbar .tabs a{padding:13px;text-align:center;border-radius:10px;display:block}
+  body{padding:0 8px 50px}
+  #navbar{padding:10px 12px;margin:0 -8px 16px}
+  .card{padding:18px}
+  button{padding:13px 18px;font-size:15px}
+}
+.card{background:rgba(30,41,59,.6);backdrop-filter:blur(10px);border:1px solid rgba(148,163,184,.2);border-radius:20px;padding:26px;width:100%;max-width:640px;margin-bottom:18px}
+body.light .card{background:#fff;border-color:#e2e8f0}
+.card h2{color:#c4b5fd;font-size:16px;margin-bottom:14px;text-transform:uppercase;letter-spacing:3px}
+button{background:linear-gradient(135deg,#818cf8,#a78bfa);color:#0f172a;font-weight:800;border:none;padding:11px 20px;border-radius:11px;cursor:pointer;font-size:14px;margin:4px 2px}
+button.ghost{background:transparent;color:#a5b4fc;border:1px solid #6366f1}
+input[type=text],input[type=password]{padding:11px 14px;border-radius:11px;border:1px solid #4f46e5;background:rgba(0,0,0,.3);color:#fff;width:100%;max-width:240px;font-size:16px}
+body.light input[type=text],body.light input[type=password]{background:#f8fafc;color:#0f172a;border-color:#c7d2fe}
+.box{background:rgba(0,0,0,.3);border-radius:12px;padding:12px 14px;min-height:120px;max-height:320px;overflow-y:auto;font-size:13px;white-space:pre-wrap;margin:10px 0;color:#c7d2fe;scrollbar-width:thin;scrollbar-color:#818cf8 rgba(0,0,0,.2)}
+input[type=file]{margin:6px 0;color:#94a3b8;font-size:13px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+header{text-align:center;margin-bottom:24px}
+header h1{font-size:36px;font-weight:800}
+header h1 b{color:#a5b4fc}
+header p{color:#94a3b8;margin-top:8px}
+#chat img{max-width:100%;max-height:240px;border-radius:10px;margin-top:4px}
+#code{font-size:36px;letter-spacing:8px;font-family:Consolas,monospace;color:#a5b4fc;border:2px dashed #818cf8;border-radius:14px;padding:10px 20px;display:inline-block;margin:10px 0;direction:ltr}
 </style>
 </head>
 <body>
 <div id="navbar">
   <div class="logo">📦 Send<b>Code</b></div>
   <div class="tabs" id="navTabs">
-    <a href="index.html">📤 إرسال</a>
-    <a href="recevoir.html">📥 استقبال</a>
-    <a href="discuter.html" class="active">💬 دردشة</a>
+    <a href="index.html">📤 <span data-ar="إرسال" data-fr="Envoyer">إرسال</span></a>
+    <a href="recevoir.html">📥 <span data-ar="استقبال" data-fr="Recevoir">استقبال</span></a>
+    <a href="discuter.html" class="active">💬 <span data-ar="دردشة" data-fr="Chat">دردشة</span></a>
   </div>
-  <div><button id="menuBtn" class="ghost" onclick="document.getElementById('navTabs').classList.toggle('open')">☰</button></div>
+  <div class="actions">
+    <button id="menuBtn" class="ghost" onclick="document.getElementById('navTabs').classList.toggle('open')">☰</button>
+    <button id="langBtn" class="ghost">FR</button>
+    <button id="themeBtn" class="ghost">🌓</button>
+  </div>
 </div>
 <header>
-  <h1>💬 دردشة مشفّرة</h1>
-  <p>رمز خاص بالدردشة — فقط الشخص الذي لديه الرمز يستطيع رؤية الرسائل</p>
+  <h1 data-ar="دردشة مشفّرة" data-fr="Chat chiffré">💬 دردشة مشفّرة</h1>
+  <p data-ar="رمز خاص بالدردشة — فقط الشخص صاحب الرمز يستطيع رؤية الرسائل والصور." data-fr="Un code spécial — seule la personne qui a le code peut lire les messages et photos.">رمز خاص بالدردشة — فقط الشخص صاحب الرمز يستطيع رؤية الرسائل والصور.</p>
 </header>
+
 <div class="card">
-  <button id="btnCreate">✨ إنشاء رمز دردشة</button>
-  <div id="createArea" class="hidden" style="display:none">
+  <button id="btnCreate" data-ar="✨ إنشاء رمز دردشة" data-fr="✨ Créer un code de chat">✨ إنشاء رمز دردشة</button>
+  <div id="createArea" style="display:none">
     <div id="code"></div>
-    <p style="color:#94a3b8">أعطِ هذا الرمز لصديقك ليدخله عند الاستقبال.</p>
+    <p style="color:#94a3b8" data-ar="أعطِ هذا الرمز لصديقك ليدخله عند الاستقبال." data-fr="Donne ce code à la personne pour qu'elle rejoigne.">أعطِ هذا الرمز لصديقك ليدخله عند الاستقبال.</p>
   </div>
-  <hr style="border:1px solid rgba(148,163,184,.2);margin:14px 0">
-  <div class="row">
-    <input type="text" id="codeInput" placeholder="أدخل رمز الدردشة">
-    <button id="btnJoin">🔗 ربط</button>
+  <div class="row" style="margin-top:14px;border-top:1px solid rgba(148,163,184,.2);padding-top:14px">
+    <input type="text" id="codeInput" data-ar="أدخل رمز الدردشة" data-fr="Code de chat" placeholder="أدخل رمز الدردشة">
+    <button id="btnJoin" data-ar="🔗 ربط" data-fr="🔗 Rejoindre">🔗 ربط</button>
   </div>
+  <p class="note" style="font-size:12px;color:#94a3b8;margin-top:10px" data-ar="🔒 الرسائل مشفّرة (AES-GCM) ولا تُحفظ." data-fr="🔒 Les messages sont chiffrés (AES-GCM) et non sauvegardés.">🔒 الرسائل مشفّرة (AES-GCM) ولا تُحفظ.</p>
 </div>
 
 <div class="card" id="chatCard" style="display:none">
   <div class="box" id="chat"></div>
   <div class="row">
-    <input type="text" id="chatInput" placeholder="رسالة…" style="flex:1">
+    <input type="text" id="chatInput" data-ar="رسالة…" data-fr="Message…" placeholder="رسالة…" style="flex:1;max-width:none">
     <input type="file" id="photo" accept="image/*" style="display:none">
     <button id="photoBtn" class="ghost">📷</button>
-    <button id="chatBtn">إرسال</button>
+    <button id="chatBtn" data-ar="إرسال" data-fr="Envoyer">إرسال</button>
   </div>
 </div>
-<div id="log" class="box"></div>
+
+<div class="card">
+  <h2 data-ar="📋 السجل التقني" data-fr="📋 Journal technique">📋 السجل التقني</h2>
+  <div id="log" class="box" style="max-height:220px;min-height:90px"></div>
+</div>
 
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script>
-const log = m => document.getElementById('log').textContent += m + "\n";
-const rand = () => String(Math.floor(10000 + Math.random() * 90000));
-let conn = null, chatKey = null, imgBuf = [];
-
-async function keyFrom(code) { const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('sendcode:' + code)); return crypto.subtle.importKey('raw', h, 'AES-GCM', false, ['encrypt', 'decrypt']); }
-async function enc(t) { const iv = crypto.getRandomValues(new Uint8Array(12)); const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, chatKey, new TextEncoder().encode(t)); return btoa(String.fromCharCode(...iv)) + ':' + btoa(String.fromCharCode(...new Uint8Array(ct))); }
-async function dec(s) { const [i, c] = s.split(':'); const u = x => new Uint8Array(atob(x).split('').map(ch => ch.charCodeAt(0))); const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: u(i) }, chatKey, u(c)); return new TextDecoder().decode(pt); }
-const say = (who, t) => document.getElementById('chat').textContent += who + ' : ' + t + '\n';
-const showChat = async code => { document.getElementById('chatCard').style.display = 'block'; chatKey = await keyFrom(code); };
-
-document.getElementById('btnCreate').onclick = () => {
-  const code = rand();
-  const peer = new Peer(code);
-  peer.on('open', () => { document.getElementById('createArea').style.display = 'block'; document.getElementById('code').textContent = code; log('🔑 رمز الدردشة: ' + code); });
-  peer.on('connection', c => { conn = c; showChat(code); c.on('data', onMsg); c.on('open', () => log('✅ صديقك متصل!')); });
-  peer.on('error', e => log('❌ ' + e.type));
-};
-
-document.getElementById('btnJoin').onclick = () => {
-  const code = document.getElementById('codeInput').value.trim();
-  if (!code) { log('⚠️ أدخل الرمز'); return; }
-  const peer = new Peer();
-  peer.on('open', async () => {
-    const c = peer.connect(code, { serialization: 'binary' });
-    conn = c; await showChat(code);
-    c.on('open', () => log('🔗 متصل بالدردشة'));
-    c.on('data', onMsg);
-  });
-  peer.on('error', e => log('❌ ' + e.type + ' (رمز غير صالح؟)'));
-};
-
-async function onMsg(m) {
-  if (m.type === 'chat') { try { say('👤 هم', await dec(m.data)); } catch { log('⚠️ رسالة غير مقروءة'); } }
-  if (m.type === 'imgmeta') { window._img = { name: m.name, mime: m.mime, parts: [] }; }
-  if (m.type === 'imgchunk' && window._img) window._img.parts.push(m.data);
-  if (m.type === 'imgend' && window._img) {
-    const blob = new Blob(window._img.parts, { type: window._img.mime });
-    const im = document.createElement('img'); im.src = URL.createObjectURL(blob);
-    document.getElementById('chat').appendChild(im); document.getElementById('chat').appendChild(document.createTextNode('\n'));
-    window._img = null;
-  }
-}
-
-document.getElementById('photoBtn').onclick = () => document.getElementById('photo').click();
-document.getElementById('photo').onchange = async e => {
-  const f = e.target.files[0]; if (!f || !conn) { log('⚠️ لست متصلا بعد'); return; }
-  conn.send({ type: 'imgmeta', name: f.name, mime: f.type });
-  const buf = await f.arrayBuffer();
-  const CHUNK = 16 * 1024;
-  for (let off = 0; off < buf.byteLength; off += CHUNK) conn.send({ type: 'imgchunk', data: buf.slice(off, off + CHUNK) });
-  conn.send({ type: 'imgend' });
-  const im = document.createElement('img'); im.src = URL.createObjectURL(f);
-  document.getElementById('chat').appendChild(im); document.getElementById('chat').appendChild(document.createTextNode('\n'));
-};
-document.getElementById('chatBtn').onclick = async () => {
-  const txt = document.getElementById('chatInput').value.trim();
-  if (txt && conn && chatKey) { conn.send({ type: 'chat', data: await enc(txt) }); say('🧑 أنا', txt); }
-  document.getElementById('chatInput').value = '';
-};
+let LANG='ar'; const t=(a,f)=>LANG==='ar'?a:f;
+const log=m=>document.getElementById('log').textContent+=m+"\n";
+const rand=()=>String(Math.floor(10000+Math.random()*90000));
+let conn=null, chatKey=null, imgBuf=null;
+function applyLang(l){LANG=l;document.documentElement.lang=l;document.documentElement.dir=l==='ar'?'rtl':'ltr';document.title=l==='ar'?'SendCode — دردشة':'SendCode — Chat';document.querySelectorAll('[data-ar]').forEach(el=>{const v=el.dataset[l];if(!v)return;if(el.placeholder!==undefined&&el.tagName==='INPUT')el.placeholder=v;else el.textContent=v;});document.getElementById('langBtn').textContent=l==='ar'?'FR':'العربية'}
+document.getElementById('langBtn').onclick=()=>applyLang(LANG==='ar'?'fr':'ar');
+document.getElementById('themeBtn').onclick=()=>document.body.classList.toggle('light');
+async function keyFrom(code){const h=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('sendcode:'+code));return crypto.subtle.importKey('raw',h,'AES-GCM',false,['encrypt','decrypt'])}
+async function enc(x){const iv=crypto.getRandomValues(new Uint8Array(12));const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},chatKey,new TextEncoder().encode(x));return btoa(String.fromCharCode(...iv))+':'+btoa(String.fromCharCode(...new Uint8Array(ct)))}
+async function dec(s){const[i,c]=s.split(':');const u=x=>new Uint8Array(atob(x).split('').map(ch=>ch.charCodeAt(0)));const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:u(i)},chatKey,u(c));return new TextDecoder().decode(pt)}
+const say=(who,x)=>document.getElementById('chat').textContent+=who+' : '+x+'\n';
+const showChat=async code=>{document.getElementById('chatCard').style.display='block';chatKey=await keyFrom(code)};
+document.getElementById('btnCreate').onclick=()=>{const code=rand();const peer=new Peer(code);peer.on('open',()=>{document.getElementById('createArea').style.display='block';document.getElementById('code').textContent=code;log('🔑 '+t('رمز الدردشة: ','Code de chat: ')+code)});peer.on('connection',c=>{conn=c;showChat(code);c.on('data',onMsg);c.on('open',()=>log('✅ '+t('صديقك متصل!','Connecté !')))});peer.on('error',e=>log('❌ '+e.type))};
+document.getElementById('btnJoin').onclick=()=>{const code=document.getElementById('codeInput').value.trim();if(!code){log('⚠️ '+t('أدخل الرمز','Entre le code'));return}const peer=new Peer();peer.on('open',async()=>{const c=peer.connect(code,{serialization:'binary'});conn=c;await showChat(code);c.on('open',()=>log('🔗 '+t('متصل بالدردشة','Connecté au chat')));c.on('data',onMsg)});peer.on('error',e=>log('❌ '+e.type+' ('+t('رمز غير صالح؟','code inconnu ?')+')'))};
+async function onMsg(m){if(m.type==='chat'){try{say('👤 '+t('هم','Eux'),await dec(m.data))}catch{log('⚠️ '+t('رسالة غير مقروءة','message illisible'))}}if(m.type==='imgmeta'){window._img={name:m.name,mime:m.mime,parts:[]}}if(m.type==='imgchunk'&&window._img)window._img.parts.push(m.data);if(m.type==='imgend'&&window._img){const blob=new Blob(window._img.parts,{type:window._img.mime});const im=document.createElement('img');im.src=URL.createObjectURL(blob);document.getElementById('chat').appendChild(im);document.getElementById('chat').appendChild(document.createTextNode('\n'));window._img=null}}
+document.getElementById('photoBtn').onclick=()=>document.getElementById('photo').click();
+document.getElementById('photo').onchange=async e=>{const f=e.target.files[0];if(!f||!conn){log('⚠️ '+t('لست متصلا بعد','Pas encore connecté'));return}conn.send({type:'imgmeta',name:f.name,mime:f.type});const buf=await f.arrayBuffer();const CH=16*1024;for(let off=0;off<buf.byteLength;off+=CH)conn.send({type:'imgchunk',data:buf.slice(off,off+CH)});conn.send({type:'imgend'});const im=document.createElement('img');im.src=URL.createObjectURL(f);document.getElementById('chat').appendChild(im);document.getElementById('chat').appendChild(document.createTextNode('\n'))};
+document.getElementById('chatBtn').onclick=async()=>{const txt=document.getElementById('chatInput').value.trim();if(txt&&conn&&chatKey){conn.send({type:'chat',data:await enc(txt)});say('🧑 '+t('أنا','Moi'),txt)}document.getElementById('chatInput').value=''};
 </script>
 </body>
 </html>
-
