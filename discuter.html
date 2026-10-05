@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SendCode — دردشة</title>
+<style>
+  * { box-sizing: border-box; margin:0; padding:0; font-family: 'Segoe UI', Tahoma, system-ui, sans-serif; }
+  body { min-height:100vh; background: radial-gradient(1200px 600px at 80% -10%, #312e81 0%, #0f172a 45%, #020617 100%); color:#e2e8f0; padding:32px 16px 60px; display:flex; flex-direction:column; align-items:center; }
+  header { text-align:center; margin-bottom:20px; }
+  header h1 { font-size:34px; font-weight:800; color:#a5b4fc; }
+  header p { color:#94a3b8; margin-top:6px; }
+  .card { background: rgba(30,41,59,.6); border:1px solid rgba(148,163,184,.2); border-radius:20px; padding:26px; width:100%; max-width:640px; margin-bottom:18px; }
+  button { background: linear-gradient(135deg,#818cf8,#a78bfa); color:#0f172a; font-weight:800; border:none; padding:11px 20px; border-radius:11px; cursor:pointer; font-size:14px; margin:4px 2px; }
+  button.ghost { background:transparent; color:#a5b4fc; border:1px solid #6366f1; }
+  input[type=text], input[type=password] { padding:11px 14px; border-radius:11px; border:1px solid #4f46e5; background:rgba(0,0,0,.3); color:#fff; font-size:16px; }
+  .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .box { background:rgba(0,0,0,.3); border-radius:12px; padding:12px 14px; min-height:120px; max-height:320px; overflow-y:auto; font-size:13px; white-space:pre-wrap; margin:10px 0; color:#c7d2fe; scrollbar-width:thin; scrollbar-color:#818cf8 rgba(0,0,0,.2); }
+  nav a { color:#a5b4fc; text-decoration:none; margin:0 8px; }
+  #chat img { max-width:100%; max-height:240px; border-radius:10px; margin-top:4px; }
+  #code { font-size:36px; letter-spacing:8px; font-family:Consolas,monospace; color:#a5b4fc; border:2px dashed #818cf8; border-radius:14px; padding:10px 20px; display:inline-block; margin:10px 0; direction:ltr; }
+</style>
+</head>
+<body>
+<header>
+  <h1>💬 دردشة مشفّرة</h1>
+  <p>رمز خاص بالدردشة — فقط الشخص الذي لديه الرمز يستطيع رؤية الرسائل</p>
+  <nav><a href="index.html">📤 إرسال الملفات</a> · <a href="recevoir.html">📥 استقبال</a></nav>
+</header>
+<div class="card">
+  <button id="btnCreate">✨ إنشاء رمز دردشة</button>
+  <div id="createArea" class="hidden" style="display:none">
+    <div id="code"></div>
+    <p style="color:#94a3b8">أعطِ هذا الرمز لصديقك ليدخله عند الاستقبال.</p>
+  </div>
+  <hr style="border:1px solid rgba(148,163,184,.2);margin:14px 0">
+  <div class="row">
+    <input type="text" id="codeInput" placeholder="أدخل رمز الدردشة">
+    <button id="btnJoin">🔗 ربط</button>
+  </div>
+</div>
+
+<div class="card" id="chatCard" style="display:none">
+  <div class="box" id="chat"></div>
+  <div class="row">
+    <input type="text" id="chatInput" placeholder="رسالة…" style="flex:1">
+    <input type="file" id="photo" accept="image/*" style="display:none">
+    <button id="photoBtn" class="ghost">📷</button>
+    <button id="chatBtn">إرسال</button>
+  </div>
+</div>
+<div id="log" class="box"></div>
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+const log = m => document.getElementById('log').textContent += m + "\n";
+const rand = () => String(Math.floor(10000 + Math.random() * 90000));
+let conn = null, chatKey = null, imgBuf = [];
+
+async function keyFrom(code) { const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('sendcode:' + code)); return crypto.subtle.importKey('raw', h, 'AES-GCM', false, ['encrypt', 'decrypt']); }
+async function enc(t) { const iv = crypto.getRandomValues(new Uint8Array(12)); const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, chatKey, new TextEncoder().encode(t)); return btoa(String.fromCharCode(...iv)) + ':' + btoa(String.fromCharCode(...new Uint8Array(ct))); }
+async function dec(s) { const [i, c] = s.split(':'); const u = x => new Uint8Array(atob(x).split('').map(ch => ch.charCodeAt(0))); const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: u(i) }, chatKey, u(c)); return new TextDecoder().decode(pt); }
+const say = (who, t) => document.getElementById('chat').textContent += who + ' : ' + t + '\n';
+const showChat = async code => { document.getElementById('chatCard').style.display = 'block'; chatKey = await keyFrom(code); };
+
+document.getElementById('btnCreate').onclick = () => {
+  const code = rand();
+  const peer = new Peer(code);
+  peer.on('open', () => { document.getElementById('createArea').style.display = 'block'; document.getElementById('code').textContent = code; log('🔑 رمز الدردشة: ' + code); });
+  peer.on('connection', c => { conn = c; showChat(code); c.on('data', onMsg); c.on('open', () => log('✅ صديقك متصل!')); });
+  peer.on('error', e => log('❌ ' + e.type));
+};
+
+document.getElementById('btnJoin').onclick = () => {
+  const code = document.getElementById('codeInput').value.trim();
+  if (!code) { log('⚠️ أدخل الرمز'); return; }
+  const peer = new Peer();
+  peer.on('open', async () => {
+    const c = peer.connect(code, { serialization: 'binary' });
+    conn = c; await showChat(code);
+    c.on('open', () => log('🔗 متصل بالدردشة'));
+    c.on('data', onMsg);
+  });
+  peer.on('error', e => log('❌ ' + e.type + ' (رمز غير صالح؟)'));
+};
+
+async function onMsg(m) {
+  if (m.type === 'chat') { try { say('👤 هم', await dec(m.data)); } catch { log('⚠️ رسالة غير مقروءة'); } }
+  if (m.type === 'imgmeta') { window._img = { name: m.name, mime: m.mime, parts: [] }; }
+  if (m.type === 'imgchunk' && window._img) window._img.parts.push(m.data);
+  if (m.type === 'imgend' && window._img) {
+    const blob = new Blob(window._img.parts, { type: window._img.mime });
+    const im = document.createElement('img'); im.src = URL.createObjectURL(blob);
+    document.getElementById('chat').appendChild(im); document.getElementById('chat').appendChild(document.createTextNode('\n'));
+    window._img = null;
+  }
+}
+
+document.getElementById('photoBtn').onclick = () => document.getElementById('photo').click();
+document.getElementById('photo').onchange = async e => {
+  const f = e.target.files[0]; if (!f || !conn) { log('⚠️ لست متصلا بعد'); return; }
+  conn.send({ type: 'imgmeta', name: f.name, mime: f.type });
+  const buf = await f.arrayBuffer();
+  const CHUNK = 16 * 1024;
+  for (let off = 0; off < buf.byteLength; off += CHUNK) conn.send({ type: 'imgchunk', data: buf.slice(off, off + CHUNK) });
+  conn.send({ type: 'imgend' });
+  const im = document.createElement('img'); im.src = URL.createObjectURL(f);
+  document.getElementById('chat').appendChild(im); document.getElementById('chat').appendChild(document.createTextNode('\n'));
+};
+document.getElementById('chatBtn').onclick = async () => {
+  const txt = document.getElementById('chatInput').value.trim();
+  if (txt && conn && chatKey) { conn.send({ type: 'chat', data: await enc(txt) }); say('🧑 أنا', txt); }
+  document.getElementById('chatInput').value = '';
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SendCode — استقبال</title>
+<style>
+  * { box-sizing: border-box; margin:0; padding:0; font-family: 'Segoe UI', Tahoma, system-ui, sans-serif; }
+  body { min-height:100vh; background: radial-gradient(1200px 600px at 80% -10%, #312e81 0%, #0f172a 45%, #020617 100%); color:#e2e8f0; padding:32px 16px 60px; display:flex; flex-direction:column; align-items:center; }
+  header { text-align:center; margin-bottom:20px; }
+  header h1 { font-size:34px; font-weight:800; color:#a5b4fc; }
+  header p { color:#94a3b8; margin-top:6px; }
+  .card { background: rgba(30,41,59,.6); border:1px solid rgba(148,163,184,.2); border-radius:20px; padding:26px; width:100%; max-width:640px; margin-bottom:18px; }
+  .card h2 { color:#c4b5fd; font-size:16px; margin-bottom:14px; }
+  button { background: linear-gradient(135deg,#818cf8,#a78bfa); color:#0f172a; font-weight:800; border:none; padding:11px 20px; border-radius:11px; cursor:pointer; font-size:14px; margin:4px 2px; }
+  button.ghost { background:transparent; color:#a5b4fc; border:1px solid #6366f1; }
+  input[type=text], input[type=password] { padding:11px 14px; border-radius:11px; border:1px solid #4f46e5; background:rgba(0,0,0,.3); color:#fff; font-size:16px; }
+  .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .speed { font-family:Consolas,monospace; color:#c4b5fd; margin-top:8px; }
+  .box { background:rgba(0,0,0,.3); border-radius:12px; padding:12px 14px; min-height:56px; max-height:170px; overflow-y:auto; font-size:13px; white-space:pre-wrap; margin:10px 0; color:#c7d2fe; scrollbar-width:thin; scrollbar-color:#818cf8 rgba(0,0,0,.2); }
+  #files a { display:block; color:#c4b5fd; background:rgba(0,0,0,.3); padding:9px 12px; border-radius:9px; margin-top:6px; text-decoration:none; }
+  nav a { color:#a5b4fc; text-decoration:none; margin:0 8px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>📥 استقبال الملفات</h1>
+  <p>أدخل الرمز الذي أعطاك إياه المُرسِل</p>
+  <nav><a href="index.html">📤 إرسال</a> · <a href="discuter.html">💬 دردشة</a></nav>
+</header>
+<div id="statusConn" class="box" style="text-align:center;max-width:300px">🔴 غير متصل</div>
+<div class="card">
+  <div class="row">
+    <input type="text" id="codeInput" placeholder="الرمز المستلَم">
+    <button id="btnReceiver">🔗 اتصال</button>
+    <input type="password" id="passRecv" placeholder="كلمة المرور" style="max-width:140px">
+  </div>
+  <div id="files"></div>
+  <div id="recvSpeed" class="speed hidden" style="display:none"></div>
+</div>
+<div id="log" class="box"></div>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+const log = m => document.getElementById('log').textContent += m + "\n";
+const setStatus = t => document.getElementById('statusConn').textContent = t;
+let recvConn = null;
+const urlCode = new URLSearchParams(location.search).get('code');
+if (urlCode) { document.getElementById('codeInput').value = urlCode; setTimeout(() => connectRecv(urlCode), 800); }
+function connectRecv(code) {
+  const peer = new Peer();
+  let cur = null, last = 0, lastT = Date.now();
+  document.getElementById('recvSpeed').style.display = 'block';
+  peer.on('open', () => {
+    const conn = peer.connect(code, { serialization: 'binary' });
+    recvConn = conn;
+    let gotFirst = false;
+    conn.on('open', () => {
+      setStatus('🟡 جارٍ الاتصال…');
+      log('🔗 متصل بالرمز ' + code);
+      const iv = setInterval(() => { gotFirst ? clearInterval(iv) : conn.send({ type: 'ready', pass: document.getElementById('passRecv').value || '' }); }, 800);
+      conn.send({ type: 'ready', pass: document.getElementById('passRecv').value || '' });
+      window._stopReady = () => { gotFirst = true; clearInterval(iv); };
+    });
+    conn.on('data', async msg => {
+      if (msg.type === 'meta') { cur = { name: msg.name, parts: [], mime: msg.mime || '' }; log('📥 ' + msg.name); last = 0; if (window._stopReady) window._stopReady(); }
+      else if (msg.type === 'chunk' && cur) {
+        cur.parts.push(msg.data);
+        const now = Date.now();
+        const got = cur.parts.reduce((s, p) => s + p.byteLength, 0);
+        if (now - lastT > 500) { const v = (got - last) / ((now - lastT) / 1000); document.getElementById('recvSpeed').textContent = '⚡ ' + (v / 1048576).toFixed(2) + ' MB/s'; last = got; lastT = now; }
+      }
+      else if (msg.type === 'fileend' && cur) {
+        const blob = new Blob(cur.parts, { type: cur.mime });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = cur.name.split('/').pop();
+        a.textContent = (blob.type.startsWith('image/') ? '🖼️ ' : '📥 ') + cur.name + ' — ' + (blob.size / 1048576).toFixed(2) + ' MB' + (blob.type.startsWith('image/') ? ' (اضغط للفتح)' : ' (اضغط للتنزيل)');
+        if (blob.type.startsWith('image/')) a.target = '_blank';
+        document.getElementById('files').appendChild(a);
+        log('✅ تم الاستلام: ' + cur.name);
+        cur = null;
+      }
+      else if (msg.type === 'done') { log('🎉 وصلت جميع الملفات!'); try { conn.send({ type: 'complete' }); } catch {} setStatus('🟢 اكتمل الاستلام ✅'); }
+    });
+    conn.on('error', e => log('❌ ' + e));
+  });
+  peer.on('error', e => log('❌ ' + e.type + ' (رمز غير صالح؟)'));
+}
+document.getElementById('btnReceiver').onclick = () => { const c = document.getElementById('codeInput').value.trim(); if (!c) { log('⚠️ أدخل الرمز'); return; } connectRecv(c); };
+</script>
+</body>
+</html>
