@@ -117,5 +117,6 @@ document.getElementById('photoBtn').onclick=()=>document.getElementById('photo')
 document.getElementById('photo').onchange=async e=>{const f=e.target.files[0];if(!f||!conn||!conn.open){log('⚠️ '+t('لست متصلا بعد','Pas encore connecté'));return}conn.send({type:'imgmeta',name:f.name,mime:f.type});const buf=await f.arrayBuffer();const CH=16*1024;for(let off=0;off<buf.byteLength;off+=CH)conn.send({type:'imgchunk',data:buf.slice(off,off+CH)});conn.send({type:'imgend'});const im=document.createElement('img');im.src=URL.createObjectURL(f);im.style.cursor='pointer';im.onclick=()=>window.open(im.src,'_blank');document.getElementById('chat').appendChild(im);document.getElementById('chat').appendChild(document.createTextNode('\n'))};
 document.getElementById('chatBtn').onclick=async()=>{const txt=document.getElementById('chatInput').value.trim();if(!conn||!conn.open){log('⚠️ '+t('انتظر... الاتصال غير مفتوح بعد','En attente d\'ouverture de la connexion…'));return}if(txt&&chatKey){conn.send({type:'chat',data:await enc(txt)});say('🧑 '+t('أنا','Moi'),txt)}document.getElementById('chatInput').value=''};
 </script>
+<footer style="margin-top:40px;color:#64748b;font-size:13px;text-align:center">BY Sidou</footer>
 </body>
 </html>
