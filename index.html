@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SendCode — نقل الملفات برمز</title>
+<title>Send Your File — نقل الملفات برمز</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#6366f1">
 <link rel="apple-touch-icon" href="icon.svg">
@@ -72,7 +72,7 @@ body.light header p{color:#475569}
 </head>
 <body>
 <div id="navbar">
-  <div class="logo">📦 Send<b>Code</b></div>
+  <div class="logo">📦 Send<b>Your File</b></div>
   <div class="tabs" id="navTabs">
     <a href="index.html" class="active">📤 <span data-ar="إرسال" data-fr="Envoyer">إرسال</span></a>
     <a href="recevoir.html">📥 <span data-ar="استقبال" data-fr="Recevoir">استقبال</span></a>
@@ -85,7 +85,7 @@ body.light header p{color:#475569}
   </div>
 </div>
 <header>
-  <h1>Send<b>Code</b></h1>
+  <h1>Send<b>Your File</b></h1>
   <p data-ar="مجلدات وصور وملفات ZIP وRAR… بين جهازين مباشرة — بدون خادم وبدون أثر." data-fr="Dossiers, images, ZIP, RAR… entre 2 appareils — sans serveur.">مجلدات وصور وملفات ZIP وRAR… بين جهازين مباشرة — بدون خادم وبدون أثر.</p>
   <p style="margin-top:6px;font-size:13px" data-ar="📱 يعمل من الحاسوب أو الهاتف — حاسوب ↔ حاسوب، حاسوب ↔ هاتف، هاتف ↔ حاسوب." data-fr="📱 Fonctionne sur PC ou téléphone — PC ↔ PC, PC ↔ téléphone, téléphone ↔ PC.">📱 يعمل من الحاسوب أو الهاتف — حاسوب ↔ حاسوب، حاسوب ↔ هاتف، هاتف ↔ حاسوب.</p>
 </header>
@@ -152,7 +152,7 @@ const log=m=>document.getElementById('log').textContent+=m+"\n";
 const rand=()=>String(Math.floor(10000+Math.random()*90000));
 let sendConn=null;
 const reco=()=>navigator.onLine;
-function applyLang(l){LANG=l;document.documentElement.lang=l;document.documentElement.dir=l==='ar'?'rtl':'ltr';document.title=l==='ar'?'SendCode — نقل الملفات برمز':'SendCode — Transfert par code';document.querySelectorAll('[data-ar]').forEach(el=>{const v=el.dataset[l];if(!v)return;if(el.placeholder!==undefined&&el.tagName==='INPUT')el.placeholder=v;else el.textContent=v;});document.getElementById('langBtn').textContent=l==='ar'?'FR':'العربية';renderHist();}
+function applyLang(l){LANG=l;document.documentElement.lang=l;document.documentElement.dir=l==='ar'?'rtl':'ltr';document.title=l==='ar'?'Send Your File — نقل الملفات برمز':'Send Your File — Transfert par code';document.querySelectorAll('[data-ar]').forEach(el=>{const v=el.dataset[l];if(!v)return;if(el.placeholder!==undefined&&el.tagName==='INPUT')el.placeholder=v;else el.textContent=v;});document.getElementById('langBtn').textContent=l==='ar'?'FR':'العربية';renderHist();}
 document.getElementById('langBtn').onclick=()=>applyLang(LANG==='ar'?'fr':'ar');
 document.getElementById('themeBtn').onclick=()=>document.body.classList.toggle('light');
 const setStatus=t=>document.getElementById('statusConn').textContent=t;

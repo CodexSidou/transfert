@@ -1,6 +1,6 @@
 {
-  "name": "SendCode — Transfert par code",
-  "short_name": "SendCode",
+  "name": "Send Your File — Transfert par code",
+  "short_name": "Send Your File",
   "description": "Transférer des fichiers de PC à PC / téléphone par un simple code.",
   "start_url": ".",
   "scope": ".",
