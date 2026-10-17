@@ -11,24 +11,33 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Tahoma,system-ui,sans-serif;transition:box-shadow .2s}
 body{min-height:100vh;background:radial-gradient(1200px 600px at 80% -10%,#312e81 0%,#0f172a 45%,#020617 100%);color:#e2e8f0;padding:0 16px 60px;display:flex;flex-direction:column;align-items:center}
-#navbar{position:sticky;top:0;z-index:10;width:100%;background:rgba(15,23,42,.92);backdrop-filter:blur(10px);border-bottom:1px solid rgba(148,163,184,.2);display:flex;align-items:center;justify-content:space-between;padding:12px 18px;margin:0 -16px 24px}
-#navbar .logo{color:#e2e8f0;font-weight:800;font-size:18px}
+/* ===== Navbar ===== */
+#navbar{position:sticky;top:0;z-index:100;width:100%;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 20px;margin:0 -16px 26px;background:rgba(15,23,42,.78);backdrop-filter:blur(14px) saturate(160%);border-bottom:1px solid rgba(148,163,184,.18);box-shadow:0 10px 30px -14px rgba(2,6,23,.9)}
+#navbar::before{content:"";position:absolute;inset:0 0 auto 0;height:2px;background:linear-gradient(90deg,transparent,#818cf8,#a78bfa,#38bdf8,transparent);opacity:.85}
+#navbar .logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:#e2e8f0;font-weight:800;font-size:18px}
+#navbar .logo-mark{display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,#818cf8,#a78bfa);font-size:17px;box-shadow:0 6px 16px rgba(129,140,248,.45);transition:transform .25s}
+#navbar .logo:hover .logo-mark{transform:translateY(-1px) rotate(-6deg)}
 #navbar .logo b{color:#a5b4fc}
 #navbar .tabs{display:flex;gap:6px}
-#navbar .tabs a{text-decoration:none;color:#a5b4fc;padding:8px 14px;border-radius:10px;font-weight:700;font-size:14px}
-#navbar .tabs a.active{background:linear-gradient(135deg,#818cf8,#a78bfa);color:#0f172a}
-#navbar .actions button{width:36px;height:36px;border-radius:50%;padding:0;margin-inline-start:4px}
-#menuBtn{display:none}
-@media (max-width:700px){
-  #menuBtn{display:flex !important;width:36px;height:36px;border-radius:50%;align-items:center;justify-content:center}
-  #navbar .tabs{position:fixed;top:58px;left:0;right:0;max-height:0;overflow:hidden;flex-direction:column;background:rgba(15,23,42,.98);padding:0 10px;gap:0;transition:max-height .3s ease,padding .3s ease;display:flex;border-bottom:0;z-index:99}
-  #navbar .tabs.open{max-height:320px;padding:10px;gap:4px;border-bottom:1px solid rgba(148,163,184,.2)}
-  #navbar .tabs a{padding:13px;text-align:center;border-radius:10px;display:block}
+#navbar .tabs a{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:#a5b4fc;padding:9px 15px;border-radius:12px;font-weight:700;font-size:14px;white-space:nowrap;transition:background .2s,color .2s,transform .2s}
+#navbar .tabs a:hover{background:rgba(129,140,248,.15);color:#e2e8f0;transform:translateY(-1px)}
+#navbar .tabs a.active{background:linear-gradient(135deg,#818cf8,#a78bfa);color:#0f172a;box-shadow:0 8px 22px rgba(129,140,248,.42)}
+#navbar .actions{display:flex;align-items:center;gap:8px}
+#navbar .actions button{width:38px;height:38px;border-radius:50%;padding:0;margin:0;font-size:16px;display:grid;place-items:center}
+#navbar .langpill{width:auto !important;height:auto !important;display:inline-block}
+#navbar #menuBtn{display:none;background:transparent;color:#a5b4fc;border:1px solid #6366f1;cursor:pointer}
+#navbar #menuBtn:hover{background:rgba(129,140,248,.15);transform:translateY(-1px)}
+@media (max-width:760px){
+  #navbar{padding:10px 14px;margin:0 -8px 18px}
+  #navbar #menuBtn{display:grid}
+  #navbar .tabs{position:fixed;top:60px;left:0;right:0;flex-direction:column;gap:6px;padding:0 12px;max-height:0;overflow:hidden;opacity:0;pointer-events:none;background:rgba(15,23,42,.98);backdrop-filter:blur(14px);z-index:99;transition:max-height .32s ease,padding .32s ease,opacity .25s ease}
+  #navbar .tabs.open{max-height:340px;padding:12px;opacity:1;pointer-events:auto;border-bottom:1px solid rgba(148,163,184,.2);box-shadow:0 22px 40px -22px #000}
+  #navbar .tabs a{padding:13px;text-align:center;justify-content:center}
   body{padding:0 8px 50px}
-  #navbar{padding:10px 12px;margin:0 -8px 16px}
   .card{padding:18px}
   button{padding:13px 18px;font-size:15px}
 }
+/* ===== /Navbar ===== */
 .card{background:rgba(30,41,59,.6);backdrop-filter:blur(10px);border:1px solid rgba(148,163,184,.2);border-radius:20px;padding:26px;width:100%;max-width:640px;margin-bottom:18px}
 .card h2{color:#c4b5fd;font-size:16px;margin-bottom:14px;text-transform:uppercase;letter-spacing:3px}
 button{background:linear-gradient(135deg,#818cf8,#a78bfa);color:#0f172a;font-weight:800;border:none;padding:11px 20px;border-radius:11px;cursor:pointer;font-size:14px;margin:4px 2px}
@@ -39,6 +48,14 @@ input[type=text],input[type=password]{padding:11px 14px;border-radius:11px;borde
 progress{width:100%;height:12px;border-radius:6px;margin-top:12px;accent-color:#8b5cf6}
 .box{background:rgba(0,0,0,.3);border-radius:12px;padding:12px 14px;min-height:56px;max-height:170px;overflow-y:auto;font-size:13px;white-space:pre-wrap;margin:10px 0;color:#c7d2fe;scrollbar-width:thin;scrollbar-color:#818cf8 rgba(0,0,0,.2)}
 #files a{display:block;color:#c4b5fd;background:rgba(0,0,0,.3);padding:9px 12px;border-radius:9px;margin-top:6px;text-decoration:none}
+#gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px;margin-top:14px}
+#gallery:empty{display:none}
+#gallery h3{grid-column:1/-1;color:#c4b5fd;font-size:13px;text-transform:uppercase;letter-spacing:2px;margin:0}
+.gitem{position:relative;aspect-ratio:1;border-radius:14px;overflow:hidden;border:1px solid rgba(148,163,184,.25);background:rgba(0,0,0,.3)}
+.gitem img{width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in;transition:transform .25s}
+.gitem:hover img{transform:scale(1.06)}
+.gitem .gdl{position:absolute;inset-inline-end:6px;bottom:6px;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:rgba(15,23,42,.85);color:#a5b4fc;text-decoration:none;font-size:14px;border:1px solid rgba(148,163,184,.3);margin:0;padding:0}
+.gitem .gdl:hover{background:#818cf8;color:#0f172a;transform:none}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 header{text-align:center;margin-bottom:24px}
 header h1{font-size:36px;font-weight:800}
@@ -47,19 +64,19 @@ header p{color:#94a3b8;margin-top:8px}
 </style>
 </head>
 <body>
-<div id="navbar">
-  <div class="logo">📦 Send<b>Your File</b></div>
+<nav id="navbar">
+  <a class="logo" href="index.html"><span class="logo-mark">📦</span><span class="logo-text">Send<b>Your File</b></span></a>
   <div class="tabs" id="navTabs">
     <a href="index.html">📤 <span data-ar="إرسال" data-fr="Envoyer" data-en="Send">إرسال</span></a>
     <a href="recevoir.html" class="active">📥 <span data-ar="استقبال" data-fr="Recevoir" data-en="Receive">استقبال</span></a>
     <a href="discuter.html">💬 <span data-ar="دردشة" data-fr="Chat" data-en="Chat">دردشة</span></a>
-    <a href="guide.html">📖 <span>Guide</span></a>
+    <a href="guide.html">📖 <span data-ar="دليل" data-fr="Guide" data-en="Guide">دليل</span></a>
   </div>
   <div class="actions">
-    <button id="menuBtn" class="ghost" onclick="document.getElementById('navTabs').classList.toggle('open')">☰</button>
+    <button id="menuBtn" class="ghost" aria-label="Menu" onclick="document.getElementById('navTabs').classList.toggle('open')">☰</button>
     <button id="langBtn" class="langpill">🌐 FR</button>
   </div>
-</div>
+</nav>
 <header>
   <h1 data-ar="استقبال الملفات" data-fr="Recevoir" data-en="Receive">📥 استقبال الملفات</h1>
   <p data-ar="أدخل الرمز الذي أعطاك إياه المُرسِل." data-fr="Saisis le code donné par l'expéditeur." data-en="Enter the code given by the sender.">أدخل الرمز الذي أعطاك إياه المُرسِل.</p>
@@ -72,6 +89,7 @@ header p{color:#94a3b8;margin-top:8px}
     <input type="password" id="passRecv" data-ar="كلمة المرور" data-fr="Mot de passe" data-en="Password" placeholder="كلمة المرور" style="max-width:140px">
   </div>
   <div id="files"></div>
+  <div id="gallery"></div>
   <progress id="progRecv" class="hidden" value="0" max="100"></progress>
   <div id="recvSpeed" class="speed hidden"></div>
 </div>
@@ -90,7 +108,8 @@ function startPing(conn){const s=()=>{try{conn.send({type:'ping',t:Date.now()})}
 const urlCode=new URLSearchParams(location.search).get('code');
 if(urlCode){document.getElementById('codeInput').value=urlCode;setTimeout(()=>connectRecv(urlCode),800)}
 let recvConn=null;
-function connectRecv(code){const peer=new Peer(undefined,{config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'turn:openrelay.metered.ca:80',username:'openrelayproject',credential:'openrelayproject'},{urls:'turn:openrelay.metered.ca:443',username:'openrelayproject',credential:'openrelayproject'},{urls:'turn:numb.viagenie.ca',username:'webrtc@live.com',credential:'muazkh'},{urls:'turn:numb.viagenie.ca:443?transport=tcp',username:'webrtc@live.com',credential:'muazkh'}]}});let cur=null,last=0,lastT=Date.now();document.getElementById('recvSpeed').classList.remove('hidden');peer.on('open',()=>{const conn=peer.connect(code,{serialization:'binary'});recvConn=conn;let gotFirst=false;conn.on('open',()=>{setStatus('🟡 '+t('جارٍ الاتصال…','En connexion…'));log('🔗 '+t('متصل بالرمز ','Connecté à ')+code);startPing(conn);const iv=setInterval(()=>{if(!gotFirst)conn.send({type:'ready',pass:document.getElementById('passRecv').value||''});},800);conn.send({type:'ready',pass:document.getElementById('passRecv').value||''});lastT=Date.now();window._stopReady=()=>{gotFirst=true;clearInterval(iv)}});conn.on('data',async msg=>{if(msg.type==='meta'){cur={name:msg.name,size:msg.size||0,parts:[],mime:msg.mime||''};log('📥 '+msg.name);last=0;document.getElementById('progRecv').classList.remove('hidden');document.getElementById('progRecv').value=0;if(window._stopReady)window._stopReady()}else if(msg.type==='chunk'&&cur){cur.parts.push(msg.data);const now=Date.now();const got=cur.parts.reduce((s,p)=>s+p.byteLength,0);if(now-lastT>500){const v=(got-last)/((now-lastT)/1000);document.getElementById('progRecv').classList.remove('hidden');document.getElementById('progRecv').value=cur.size?got/cur.size*100:0;document.getElementById('recvSpeed').textContent='⚡ '+(v/1048576).toFixed(2)+' MB/s'+(cur.size?' · '+(got/cur.size*100).toFixed(1)+' %':'')+' · '+t('متبقّي ~','~')+fmtDur(v>0&&cur.size?Math.ceil((cur.size-got)/v):0);last=got;lastT=now}}else if(msg.type==='fileend'&&cur){const blob=new Blob(cur.parts,{type:cur.mime});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=cur.name.split('/').pop();a.textContent=(blob.type.startsWith('image/')?'🖼️ ':'📥 ')+cur.name+' — '+(blob.size/1048576).toFixed(2)+' MB'+(blob.type.startsWith('image/')?' ('+t('اضغط للفتح','tap pour ouvrir')+')':' ('+t('اضغط للتنزيل','tap pour télécharger')+')');if(blob.type.startsWith('image/'))a.target='_blank';document.getElementById('files').appendChild(a);log('✅ '+t('تم الاستلام: ','Reçu : ')+cur.name);cur=null}else if(msg.type==='done'){log('🎉 '+t('وصلت جميع الملفات!','Tous les fichiers reçus !'));try{conn.send({type:'complete'})}catch{}setStatus('🟢 '+t('اكتمل الاستلام ✅','Terminé ✅'))}});conn.on('error',e=>log('❌ '+e))});peer.on('error',e=>log('❌ '+e.type+' ('+t('رمز غير صالح؟','code inconnu ?')+')'))}
+function connectRecv(code){const peer=new Peer(undefined,{config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'turn:openrelay.metered.ca:80',username:'openrelayproject',credential:'openrelayproject'},{urls:'turn:openrelay.metered.ca:443',username:'openrelayproject',credential:'openrelayproject'},{urls:'turn:numb.viagenie.ca',username:'webrtc@live.com',credential:'muazkh'},{urls:'turn:numb.viagenie.ca:443?transport=tcp',username:'webrtc@live.com',credential:'muazkh'}]}});let cur=null,last=0,lastT=Date.now();document.getElementById('recvSpeed').classList.remove('hidden');peer.on('open',()=>{const conn=peer.connect(code,{serialization:'binary'});recvConn=conn;let gotFirst=false;conn.on('open',()=>{setStatus('🟡 '+t('جارٍ الاتصال…','En connexion…'));log('🔗 '+t('متصل بالرمز ','Connecté à ')+code);startPing(conn);const iv=setInterval(()=>{if(!gotFirst)conn.send({type:'ready',pass:document.getElementById('passRecv').value||''});},800);conn.send({type:'ready',pass:document.getElementById('passRecv').value||''});lastT=Date.now();window._stopReady=()=>{gotFirst=true;clearInterval(iv)}});conn.on('data',async msg=>{if(msg.type==='meta'){cur={name:msg.name,size:msg.size||0,parts:[],mime:msg.mime||''};log('📥 '+msg.name);last=0;document.getElementById('progRecv').classList.remove('hidden');document.getElementById('progRecv').value=0;if(window._stopReady)window._stopReady()}else if(msg.type==='chunk'&&cur){cur.parts.push(msg.data);const now=Date.now();const got=cur.parts.reduce((s,p)=>s+p.byteLength,0);if(now-lastT>500){const v=(got-last)/((now-lastT)/1000);document.getElementById('progRecv').classList.remove('hidden');document.getElementById('progRecv').value=cur.size?got/cur.size*100:0;document.getElementById('recvSpeed').textContent='⚡ '+(v/1048576).toFixed(2)+' MB/s'+(cur.size?' · '+(got/cur.size*100).toFixed(1)+' %':'')+' · '+t('متبقّي ~','~')+fmtDur(v>0&&cur.size?Math.ceil((cur.size-got)/v):0);last=got;lastT=now}}else if(msg.type==='fileend'&&cur){const blob=new Blob(cur.parts,{type:cur.mime});const url=URL.createObjectURL(blob);const fname=cur.name.split('/').pop();const isImg=blob.type.startsWith('image/')||/\.(png|jpe?g|gif|webp|bmp|svg|avif|heic|heif)$/i.test(fname);if(isImg){addToGallery(fname,url,blob.size)}else{const a=document.createElement('a');a.href=url;a.download=fname;a.textContent='📥 '+cur.name+' — '+(blob.size/1048576).toFixed(2)+' MB ('+t('اضغط للتنزيل','tap pour télécharger')+')';document.getElementById('files').appendChild(a)}log('✅ '+t('تم الاستلام: ','Reçu : ')+cur.name);cur=null}else if(msg.type==='done'){log('🎉 '+t('وصلت جميع الملفات!','Tous les fichiers reçus !'));try{conn.send({type:'complete'})}catch{}setStatus('🟢 '+t('اكتمل الاستلام ✅','Terminé ✅'))}});conn.on('error',e=>log('❌ '+e))});peer.on('error',e=>log('❌ '+e.type+' ('+t('رمز غير صالح؟','code inconnu ?')+')'))}
+function addToGallery(name,url,size){const g=document.getElementById('gallery');if(!g.querySelector('h3')){const h=document.createElement('h3');h.textContent='🖼️ '+t('الصور المستلَمة','Images reçues');g.appendChild(h)}const it=document.createElement('div');it.className='gitem';const img=document.createElement('img');img.src=url;img.alt=name;img.title=name+' — '+(size/1048576).toFixed(2)+' MB · '+t('اضغط للتكبير','clique pour agrandir');img.onclick=()=>window.open(url,'_blank');const dl=document.createElement('a');dl.className='gdl';dl.href=url;dl.download=name;dl.textContent='⬇';dl.title=t('تنزيل','Télécharger');dl.onclick=e=>e.stopPropagation();it.appendChild(img);it.appendChild(dl);g.appendChild(it)}
 document.getElementById('btnReceiver').onclick=()=>{const c=document.getElementById('codeInput').value.trim();if(!c){log('⚠️ '+t('أدخل الرمز','Entre le code'));return}connectRecv(c)};
 applyLang(LANG);
 </script>
