@@ -7,6 +7,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#6366f1">
 <link rel="apple-touch-icon" href="icon.svg">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>r.unregister())).then(()=>window.caches?caches.keys().then(ks=>ks.forEach(k=>caches.delete(k))):null)}</script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Tahoma,system-ui,sans-serif;transition:box-shadow .2s}
@@ -15,7 +16,8 @@ body{min-height:100vh;background:radial-gradient(1200px 600px at 80% -10%,#312e8
 #navbar{position:sticky;top:0;z-index:100;width:100%;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 20px;margin:0 -16px 26px;background:rgba(15,23,42,.78);backdrop-filter:blur(14px) saturate(160%);border-bottom:1px solid rgba(148,163,184,.18);box-shadow:0 10px 30px -14px rgba(2,6,23,.9)}
 #navbar::before{content:"";position:absolute;inset:0 0 auto 0;height:2px;background:linear-gradient(90deg,transparent,#818cf8,#a78bfa,#38bdf8,transparent);opacity:.85}
 #navbar .logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:#e2e8f0;font-weight:800;font-size:18px}
-#navbar .logo-mark{display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,#818cf8,#a78bfa);font-size:17px;box-shadow:0 6px 16px rgba(129,140,248,.45);transition:transform .25s}
+#navbar .logo-mark{display:grid;place-items:center;width:34px;height:34px;transition:transform .25s}
+#navbar .logo-mark img{width:100%;height:100%;display:block;filter:drop-shadow(0 4px 10px rgba(56,189,248,.4))}
 #navbar .logo:hover .logo-mark{transform:translateY(-1px) rotate(-6deg)}
 #navbar .logo b{color:#a5b4fc}
 #navbar .tabs{display:flex;gap:6px}
@@ -25,14 +27,26 @@ body{min-height:100vh;background:radial-gradient(1200px 600px at 80% -10%,#312e8
 #navbar .actions{display:flex;align-items:center;gap:8px}
 #navbar .actions button{width:38px;height:38px;border-radius:50%;padding:0;margin:0;font-size:16px;display:grid;place-items:center}
 #navbar .langpill{width:auto !important;height:auto !important;display:inline-block}
-#navbar #menuBtn{display:none;background:transparent;color:#a5b4fc;border:1px solid #6366f1;cursor:pointer}
+#navbar #menuBtn{display:none;position:relative;background:transparent;color:#c7d2fe;border:1px solid rgba(129,140,248,.5);cursor:pointer}
 #navbar #menuBtn:hover{background:rgba(129,140,248,.15);transform:translateY(-1px)}
+#navbar #menuBtn .bars{position:relative;width:18px;height:12px;display:block}
+#navbar #menuBtn .bars span{position:absolute;left:0;width:100%;height:2px;border-radius:2px;background:currentColor;transition:transform .3s,opacity .2s,top .3s}
+#navbar #menuBtn .bars span:nth-child(1){top:0}
+#navbar #menuBtn .bars span:nth-child(2){top:5px}
+#navbar #menuBtn .bars span:nth-child(3){top:10px}
+#navbar.open #menuBtn .bars span:nth-child(1){top:5px;transform:rotate(45deg)}
+#navbar.open #menuBtn .bars span:nth-child(2){opacity:0}
+#navbar.open #menuBtn .bars span:nth-child(3){top:5px;transform:rotate(-45deg)}
+#navBackdrop{position:fixed;inset:0;background:rgba(2,6,23,.55);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);opacity:0;visibility:hidden;transition:opacity .28s,visibility .28s;z-index:98}
+#navBackdrop.open{opacity:1;visibility:visible}
 @media (max-width:760px){
   #navbar{padding:10px 14px;margin:0 -8px 18px}
   #navbar #menuBtn{display:grid}
-  #navbar .tabs{position:fixed;top:60px;left:0;right:0;flex-direction:column;gap:6px;padding:0 12px;max-height:0;overflow:hidden;opacity:0;pointer-events:none;background:rgba(15,23,42,.98);backdrop-filter:blur(14px);z-index:99;transition:max-height .32s ease,padding .32s ease,opacity .25s ease}
-  #navbar .tabs.open{max-height:340px;padding:12px;opacity:1;pointer-events:auto;border-bottom:1px solid rgba(148,163,184,.2);box-shadow:0 22px 40px -22px #000}
-  #navbar .tabs a{padding:13px;text-align:center;justify-content:center}
+  #navbar .tabs{position:fixed;top:var(--nav-h,60px);left:0;right:0;flex-direction:column;gap:8px;padding:0 14px;max-height:0;overflow:hidden;opacity:0;pointer-events:none;background:rgba(15,23,42,.98);backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);z-index:99;transition:max-height .38s cubic-bezier(.22,1,.36,1),padding .38s cubic-bezier(.22,1,.36,1),opacity .25s ease}
+  #navbar .tabs.open{max-height:72vh;padding:14px;opacity:1;pointer-events:auto;border-radius:0 0 20px 20px;box-shadow:0 28px 50px -26px #000}
+  #navbar .tabs a{padding:14px;text-align:center;justify-content:center;font-size:15px;background:rgba(148,163,184,.06);border:1px solid rgba(148,163,184,.12)}
+  #navbar .tabs a.active{background:linear-gradient(135deg,#818cf8,#a78bfa);border-color:transparent}
+  #navbar .tabs a:active{transform:scale(.98)}
   body{padding:0 8px 50px}
   .card{padding:18px}
   button{padding:13px 18px;font-size:15px}
@@ -61,11 +75,22 @@ header{text-align:center;margin-bottom:24px}
 header h1{font-size:36px;font-weight:800}
 header h1 b{color:#a5b4fc}
 header p{color:#94a3b8;margin-top:8px}
+/* ===== Modern polish ===== */
+html{scroll-behavior:smooth}
+::selection{background:#6366f1;color:#fff}
+:focus-visible{outline:2px solid #818cf8;outline-offset:2px}
+button:not(:disabled):active{transform:scale(.97)}
+input:focus,textarea:focus{outline:2px solid #818cf8;outline-offset:1px;border-color:#818cf8}
+.card{transition:transform .25s,border-color .25s,box-shadow .25s;animation:rise .55s cubic-bezier(.22,1,.36,1) both;background-image:linear-gradient(180deg,rgba(148,163,184,.06),transparent 42%)}
+.card:hover{border-color:rgba(129,140,248,.4)}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+body.nav-open{overflow:hidden}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;animation-delay:0s!important;transition-duration:.001ms!important}html{scroll-behavior:auto}}
 </style>
 </head>
 <body>
 <nav id="navbar">
-  <a class="logo" href="index.html"><span class="logo-mark">📦</span><span class="logo-text">Send<b>Your File</b></span></a>
+  <a class="logo" href="index.html"><span class="logo-mark"><img src="logo.svg" alt=""></span><span class="logo-text">Send <b>Your File</b></span></a>
   <div class="tabs" id="navTabs">
     <a href="index.html">📤 <span data-ar="إرسال" data-fr="Envoyer" data-en="Send">إرسال</span></a>
     <a href="recevoir.html" class="active">📥 <span data-ar="استقبال" data-fr="Recevoir" data-en="Receive">استقبال</span></a>
@@ -73,10 +98,12 @@ header p{color:#94a3b8;margin-top:8px}
     <a href="guide.html">📖 <span data-ar="دليل" data-fr="Guide" data-en="Guide">دليل</span></a>
   </div>
   <div class="actions">
-    <button id="menuBtn" class="ghost" aria-label="Menu" onclick="document.getElementById('navTabs').classList.toggle('open')">☰</button>
+    <button id="menuBtn" class="ghost" aria-label="Menu" aria-expanded="false" aria-controls="navTabs"><span class="bars"><span></span><span></span><span></span></span></button>
     <button id="langBtn" class="langpill">🌐 FR</button>
   </div>
 </nav>
+<div id="navBackdrop"></div>
+<script>(function(){var nav=document.getElementById('navbar');if(!nav)return;var menu=document.getElementById('navTabs'),btn=document.getElementById('menuBtn'),bd=document.getElementById('navBackdrop');function setH(){document.documentElement.style.setProperty('--nav-h',nav.offsetHeight+'px')}function set(o){nav.classList.toggle('open',o);menu.classList.toggle('open',o);if(bd)bd.classList.toggle('open',o);document.body.classList.toggle('nav-open',o);if(btn)btn.setAttribute('aria-expanded',o?'true':'false')}if(btn)btn.addEventListener('click',function(e){e.preventDefault();set(!menu.classList.contains('open'))});if(menu)menu.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){set(false)})});if(bd)bd.addEventListener('click',function(){set(false)});document.addEventListener('keydown',function(e){if(e.key==='Escape')set(false)});window.addEventListener('resize',function(){setH();if(window.innerWidth>760)set(false)},{passive:true});window.addEventListener('load',setH);setH()})();</script>
 <header>
   <h1 data-ar="استقبال الملفات" data-fr="Recevoir" data-en="Receive">📥 استقبال الملفات</h1>
   <p data-ar="أدخل الرمز الذي أعطاك إياه المُرسِل." data-fr="Saisis le code donné par l'expéditeur." data-en="Enter the code given by the sender.">أدخل الرمز الذي أعطاك إياه المُرسِل.</p>
